@@ -1,5 +1,6 @@
+set /p info=commit–≈œ¢:
 git add *
-git commit -m "auto commit"
+git commit -m %info%
 git push github master
 git push oschina master
 pause

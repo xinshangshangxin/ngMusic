@@ -1,6 +1,5 @@
 var path = require('path');
 var httpServer = require('../models/httpServer');
-var userInfoSave = require('../models/userInfoSave');
 
 
 module.exports = function(app) {
@@ -10,7 +9,6 @@ module.exports = function(app) {
     app.get('/getsonginfo', httpServer.getSongInfo);
     app.get('/serverget', httpServer.serverGet);
     app.get('/getsongsbyids', httpServer.getSongsByIds);
-    app.post('/savelist', userInfoSave.saveList);
 };
 
 function getIndex(req, res) {

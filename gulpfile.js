@@ -70,11 +70,9 @@ gulp.task('index', ['move', 'moveindex', 'tpls', 'js', 'css'], function() {
 
 
 
-
-
 // Clean
 gulp.task('clean', function(cb) {
-    del(['dist/**/*'], cb);
+    del(['dist/**/*', '!dist/node_modules/**/*', '!dist/*.zip'], cb);
 });
 
 // Default task
