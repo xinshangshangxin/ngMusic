@@ -1,7 +1,7 @@
 # ngMusic
 ---------
 
-在线演示: [http://ngmusic.sturgeon.mopaas.com/#/index](http://ngmusic.sturgeon.mopaas.com/#/index)
+在线演示: [ngMusic](http://ngmusic.coding.io/)
 
 ## h5播放,只支持chrome!!!
 
@@ -17,3 +17,6 @@
 2. 在项目根目录下 `npm install`
 3. 运行`node server.js`
 4. 浏览器打开 `http://localhost:1340/`
+
+
+> 由于mopaas部署后显示不正常更换服务器
