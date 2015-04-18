@@ -41,44 +41,6 @@ small {
     -moz-animation: rotate linear 6s infinite;
 }
 
-@keyframes rotate {
-    0% {
-        transform: rotate(0deg);
-        -webkit-transform: rotate(0deg);
-        -moz-transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-        -webkit-transform: rotate(360deg);
-        -moz-transform: rotate(360deg);
-    }
-}
-
-@-webkit-keyframes rotate {
-    0% {
-        transform: rotate(0deg);
-        -webkit-transform: rotate(0deg);
-        -moz-transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-        -webkit-transform: rotate(360deg);
-        -moz-transform: rotate(360deg);
-    }
-}
-
-@-moz-keyframes rotate {
-    0% {
-        transform: rotate(0deg);
-        -webkit-transform: rotate(0deg);
-        -moz-transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-        -webkit-transform: rotate(360deg);
-        -moz-transform: rotate(360deg);
-    }
-}
 
 .toast {
     color: white;
@@ -171,4 +133,21 @@ small {
     max-height: 520px;
     overflow-y: scroll;
     overflow-x: hidden;
+}
+
+/*滚动条*/
+#listgroup::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+    border-radius: 4px;
+}
+#listgroup::-webkit-scrollbar-button {
+    display: none;
+}
+#listgroup::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
+#listgroup::-webkit-scrollbar-corner {
+    display: none;
 }

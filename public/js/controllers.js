@@ -49,6 +49,12 @@ mainModule.directive("playaudio", ['MusicService', function(MusicService) {
     return {
         restrict: "AE",
         link: function(scope, ele) {
+            ele.on('mouseover', function(e) {
+
+            });
+            ele.on('mouseout', function(e) {
+
+            });
             ele.on("click", function(e) {
                 e.stopPropagation();
                 var index = ele.attr('data-index');
@@ -65,8 +71,20 @@ mainModule.directive("playaudio", ['MusicService', function(MusicService) {
     }
 }]);
 
-mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService', function($http, $q, $rootScope, MessageService) {
+mainModule.directive('detectiveenter', ['MusicService', function(MusicService) {
+    return {
+        restrict: "AE",
+        link: function(scope, ele) {
+            ele.on('keydown', function(e) {
+                if (e.keyCode === 13) {
+                    MusicService.changePlayer(2, ele[0].value);
+                }
+            });
+        }
+    }
+}]);
 
+mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService', function($http, $q, $rootScope, MessageService) {
     var _timer = null;
     var _audio = new Audio();
     var _lrcObj = null;
@@ -94,14 +112,24 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
     }
 
     function localSaveUsrInfo() {
-        localStorage.setItem('shang_music', JSON.stringify({
-            'setting': setting,
-            'userSongIds': _userSongIds
-        }));
+        var temp = {};      // 去除 不需要的信息保存
+        for (var attr in setting) {
+            if (setting.hasOwnProperty(attr) && attr != 'audioList' && attr != 'channelList') {
+                temp[attr] = setting[attr];
+            }
+        }
+
+        // 不影响主线程下 尽可能早的保存;
+        setTimeout(function() {
+            localStorage.setItem('shang_music', JSON.stringify({
+                'setting': temp,
+                'userSongIds': _userSongIds
+            }));
+        });
     }
 
 
-    var localSave = localStorage['shang_music'];
+    var localSave = localStorage.getItem('shang_music');
     var localSetting;
     if (localSave) {
         try{
@@ -533,6 +561,7 @@ mainModule.service('MessageService', ['$rootScope', function($rootScope) {
 mainModule.controller('channelCtrl', ['$rootScope', '$scope', 'MusicService', 'MessageService', function($rootScope, $scope, MusicService, MessageService) {
 
     $scope.isLoading = true;
+    $scope.isUsrPlay = MusicService.getSetting('isUsrPlay');
     $scope.toggleChannel = toggleChannel;
     $scope.$on('channel.toggle', toggleChannel);
 
@@ -551,13 +580,16 @@ mainModule.controller('channelCtrl', ['$rootScope', '$scope', 'MusicService', 'M
 
     $scope.togglePlayer = function() {
         var isUsrPlay = MusicService.getSetting('isUsrPlay');
-        $scope.isUsrPlay = isUsrPlay;
+        $scope.isUsrPlay = !isUsrPlay;
         ishide = false;
         $scope.showhide = 'eleDownOut';
+
         if (!isUsrPlay) {
+            MessageService.loadingBroadcast(true, '切换到用户列表...');
             MusicService.changePlayer(0); // 转到user模式
         }
         else {
+            MessageService.loadingBroadcast(true, '切换到随心听...');
             MusicService.changePlayer(1);
         }
     }
@@ -620,6 +652,13 @@ mainModule.controller('listCtrl', ['$rootScope', '$scope', 'MusicService', 'Mess
 
 
     $scope.isUsrPlay = MusicService.getSetting('isUsrPlay');
+
+
+    var ua = navigator.userAgent;
+    if (!/AppleWebKit\/(\S+)/.test(ua)) { //匹配Webkit内核浏览器（Chrome、Safari、新Opera）
+        $rootScope.name = '本网页只支持chrome内核浏览器\n\r原因:在不使用flash下\r\n只有chrome支持播放mp3';
+        return;
+    }
 
     if ($scope.isUsrPlay) {
         MusicService.changePlayer(0);

@@ -104,7 +104,7 @@ function shangLrcLoad(oAudio, oLrc) {
         if (!window.is_shang_lrc_css) {
             var cssStyle = document.createElement('style');
             cssStyle.type = 'text/css';
-            cssStyle.innerHTML = '#shang_lrc_div{margin:0;padding:0;overflow-y:scroll;overflow-x:hidden;height:100%}#shang_lrc_div::-webkit-scrollbar{width:5px;height:5px;border-radius:4px}#shang_lrc_div::-webkit-scrollbar-button{display:none}#shang_lrc_div::-webkit-scrollbar-track{background:#333}#shang_lrc_div::-webkit-scrollbar-thumb{background:#191919;border-radius:4px}#shang_lrc_div::-webkit-scrollbar-corner{display:none}.current{color:blueviolet;font-weight:bold}';
+            cssStyle.innerHTML = '#shang_lrc_div{margin:0;padding:0;overflow-y:scroll;overflow-x:hidden;height:100%}#shang_lrc_div::-webkit-scrollbar{width:5px;height:5px;border-radius:4px}#shang_lrc_div::-webkit-scrollbar-button{display:none}#shang_lrc_div::-webkit-scrollbar-thumb{background:#ccc;border-radius:4px}#shang_lrc_div::-webkit-scrollbar-corner{display:none}.current{color:blueviolet;font-weight:bold}';
             document.getElementsByTagName('head')[0].appendChild(cssStyle);
             window.is_shang_lrc_css = true;
         }

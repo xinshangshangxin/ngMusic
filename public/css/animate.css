@@ -25,26 +25,9 @@
     -webkit-transform-origin: 50% 50%;
     -webkit-animation-fill-mode: forwards;
     /*Chrome 16+, Safari 4+*/
-
-    -moz-animation: downIn ease 1s;
-    -moz-animation-iteration-count: 1;
-    -moz-transform-origin: 50% 50%;
-    -moz-animation-fill-mode: forwards;
-    /*FF 5+*/
 }
 
 @keyframes downIn {
-    0% {
-        opacity: 0;
-        transform: translate(0px, -100%);
-    }
-    100% {
-        opacity: 1;
-        transform: translate(0px, 0);
-    }
-}
-
-@-moz-keyframes downIn {
     0% {
         opacity: 0;
         transform: translate(0px, -100%);
@@ -78,29 +61,16 @@
     -webkit-transform-origin: 50% 50%;
     -webkit-animation-fill-mode: forwards;
     /*Chrome 16+, Safari 4+*/
-
-    -moz-animation: downOut ease 1s;
-    -moz-animation-iteration-count: 1;
-    -moz-transform-origin: 50% 50%;
-    -moz-animation-fill-mode: forwards;
-    /*FF 5+*/
 }
 
 @keyframes downOut {
-    from {
-        height: 100px;
+    0% {
+        opacity: 1;
+        transform: translate(0px, 0);
     }
-    to {
-        height: 0;
-    }
-}
-
-@-moz-keyframes downOut {
-    from {
-        height: 100px;
-    }
-    to {
-        height: 0;
+    100% {
+        opacity: 1;
+        transform: translate(0px, -120%);
     }
 }
 
@@ -108,10 +78,10 @@
 {
     0% {
         opacity: 1;
-        transform: translate(0px, 0);
+        transform: translate(0, 0);
     }
     100% {
-        opacity: 0;
-        transform: translate(0px, -120%);
+        opacity: 1;
+        transform: translate(0, -200px);
     }
 }
