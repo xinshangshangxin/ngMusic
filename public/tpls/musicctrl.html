@@ -25,9 +25,9 @@
                     <i class="fa fa-step-forward"></i>
                 </button>
                 <button type="button" class="btn btn-default" ng-click="changeLoop()">
-                    <i class="fa fa-refresh" title="单曲循环" ng-if="isoneloop"></i>
-                    <i class="fa fa-repeat fa-spin" title="列表循环" ng-if="!isoneloop"></i>
-                    <!--<i class="fa fa-random fa-spin" title="随机播放"></i>-->
+                    <i class="fa fa-refresh" title="单曲循环" ng-if="playMode == 1"></i>
+                    <i class="fa fa-repeat fa-spin" title="列表循环" ng-if="playMode == 0"></i>
+                    <i class="fa fa-random" title="随机播放" ng-if="playMode == 2"></i>
                 </button>
                 <button title="歌词调慢0.1s" type="button" class="btn btn-default"
                         ng-click="changeLrc(-1)">
@@ -40,18 +40,20 @@
             </div>
         </div>
         <!--进度条-->
-        <!--<div class="xl-progress">-->
-            <!--<span class="current"></span>-->
-
-            <!--<div class="xl-progress-bar">-->
-                <!--<div class="played"></div>-->
-            <!--</div>-->
-            <!--<span class="duration"></span>-->
-        <!--</div>-->
+        <div class="xl-progress">
+            <span class="current"></span>
+            <div class="xl-progress-bar">
+                <div class="played"></div>
+            </div>
+            <span class="duration"></span>
+        </div>
 
         <div class="progressbar">
-            <div class="col-xs-9 col-md-10">
-                <div class="slider img-rounded" id="progressbar">
+            <div class="col-xs-3 col-md-2">
+                <div class="timer">{{$root.alltime}}</div>
+            </div>
+            <div class="col-xs-6 col-md-8">
+                <div id="progressbar" progressdiv>
                     <div class="loaded" id='loadedprogress'></div>
                     <div class="pace" id="currentprogress"></div>
                 </div>

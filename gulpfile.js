@@ -11,7 +11,7 @@ var gulp = require('gulp'),
 // move
 gulp.task('move', function() {
     return gulp.src(
-        ['public/framework/**/*', 'server.js', 'routes/**/*', 'models/**/*'], {
+        ['public/framework/**/*', 'routes/**/*', 'models/**/*', 'server.js'], {
             base: './'
         }
     ).pipe(gulp.dest('dist'));
@@ -72,7 +72,7 @@ gulp.task('index', ['move', 'moveindex', 'tpls', 'js', 'css'], function() {
 
 // Clean
 gulp.task('clean', function(cb) {
-    del(['dist/**/*', '!dist/node_modules/**/*', '!dist/*.zip'], cb);
+    del(['dist/**/*', '!dist/node_modules/**/*', '!dist/*.zip', '!dist/package.json'], cb);
 });
 
 // Default task

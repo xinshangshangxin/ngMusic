@@ -151,3 +151,27 @@ small {
 #listgroup::-webkit-scrollbar-corner {
     display: none;
 }
+
+#progressbar:hover {
+    cursor: pointer;
+}
+
+#progressbar {
+    position: relative;
+    background: #f1f1f1;
+    height: 5px;
+    margin-top: 10px;
+}
+#currentprogress {
+    height: 5px;
+    background: #7700C7;
+    width: 0;
+    position: absolute;
+}
+
+#loadedprogress {
+    height: 5px;
+    background: #ccc;
+    width: 0;
+    position: absolute;
+}

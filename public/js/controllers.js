@@ -49,12 +49,6 @@ mainModule.directive("playaudio", ['MusicService', function(MusicService) {
     return {
         restrict: "AE",
         link: function(scope, ele) {
-            ele.on('mouseover', function(e) {
-
-            });
-            ele.on('mouseout', function(e) {
-
-            });
             ele.on("click", function(e) {
                 e.stopPropagation();
                 var index = ele.attr('data-index');
@@ -84,6 +78,46 @@ mainModule.directive('detectiveenter', ['MusicService', function(MusicService) {
     }
 }]);
 
+mainModule.directive('progressdiv', ['MusicService', function(MusicService) {
+    return {
+        restrict: 'AE',
+        link: function(scope, ele) {
+            var isProgressBar = false;
+            var currentProgressEle = document.getElementById('currentprogress');
+            var loadedprogressEle = document.getElementById('loadedprogress');
+
+            function docmove(e) {
+                if (isProgressBar) {
+                    var rect = ele[0].getBoundingClientRect();
+                    var loadedprogressEleLen = loadedprogressEle.getBoundingClientRect().width;
+                    var nu = e.x - rect.left;
+                    if (nu > loadedprogressEleLen) {
+                        nu = loadedprogressEleLen;
+                    }
+                    else if (nu > rect.width) {
+                        nu = rect.width;
+                    }
+                    currentProgressEle.style.width = nu + 'px';
+                    MusicService.setAudiocurrentTime(nu / rect.width);
+                }
+                e.stopPropagation();
+                e.preventDefault();
+                return false;
+            }
+
+            ele.on('mousedown', function() {
+                isProgressBar = true;
+                document.addEventListener('mousemove', docmove);
+            });
+            document.addEventListener('mouseup', function(e) {
+                docmove(e);
+                isProgressBar = false;
+                document.removeEventListener('mousemove', docmove);
+            });
+        }
+    }
+}]);
+
 mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService', function($http, $q, $rootScope, MessageService) {
     var _timer = null;
     var _audio = new Audio();
@@ -95,11 +129,11 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
         currentHadPlayedNu: 0,
         audioList: [],
         currentIndex: -1,
-        isOneLoop: false,
+        playMode: 0,            // 0 列表循环 1 单曲循环 2 随机播放
         isUsrPlay: true,
         isplaying: false,
         channelList: [],
-        searchMode : false
+        searchMode: false
     };
 
 
@@ -132,16 +166,16 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
     var localSave = localStorage.getItem('shang_music');
     var localSetting;
     if (localSave) {
-        try{
+        try {
             var obj = JSON.parse(localSave);
             localSetting = obj.setting || {};
             _userSongIds = obj.userSongIds || [];
         }
-        catch(e) {
+        catch (e) {
             localSetting = {};
             _userSongIds = [];
         }
-        finally{
+        finally {
             easyExtend(setting, localSetting);
         }
     }
@@ -168,18 +202,44 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
     _audio.ontimeupdate = function() {
         $rootScope.time = calculateTime();
         $rootScope.$apply();
+        loadedprogressLen();
     };
     _audio.onended = function() {
-        if (setting.isOneLoop) {
+        if (setting.playMode === 1) {
+            console.log('单曲循环');
             _playSong(setting.currentIndex);
         }
-        else {
+        else if (setting.playMode === 0) {
+            console.log('列表循环');
             _playNextSong();
+        }
+        else {
+            console.log('随机播放');
+            var l = setting.audioList.length;
+            _playSong(Math.floor(Math.random() * l));
         }
     };
 
+    var loadedprogressEle = document.getElementById('loadedprogress');
+    var progressbarEle = document.getElementById('progressbar');
+    var currentProgressEle = document.getElementById('currentprogress');
+    var maxlen = 0;
+
+    function loadedprogressLen() {
+        if (!loadedprogressEle) {
+            loadedprogressEle = document.getElementById('loadedprogress');
+            progressbarEle = document.getElementById('progressbar');
+            currentProgressEle = document.getElementById('currentprogress');
+            maxlen = progressbarEle.getBoundingClientRect().width || 0;
+        }
+        else {
+            loadedprogressEle.style.width = getBufferPercent() * maxlen + 'px';
+            currentProgressEle.style.width = (_audio.currentTime / _audio.duration) * maxlen + 'px';
+        }
+    }
+
     function _playNextSong() {
-        console.log('palysong index', (setting.currentIndex + 1) % setting.audioList.length)
+        console.log('palysong index', (setting.currentIndex + 1) % setting.audioList.length);
         _playSong((setting.currentIndex + 1) % setting.audioList.length);
     }
 
@@ -201,8 +261,9 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
         _audio.load();
         _audio.src = setting.audioList[setting.currentIndex].songLink;
         _audio.play();
-
         setting.isplaying = true;
+
+        $rootScope.alltime = calculateTime(setting.audioList[setting.currentIndex].time);
         $rootScope.$broadcast('current.update');
         MessageService.toastBroadcast(true, setting.audioList[setting.currentIndex].songName, 2000);
 
@@ -220,8 +281,8 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
             });
     }
 
-    function calculateTime() {
-        var all = _audio.currentTime;
+    function calculateTime(all) {
+        all = all || _audio.currentTime;
         var minute = Math.floor(all / 60);
         var second = Math.round(all % 60) < 10 ? "0" + Math.round(all % 60) : Math.round(all % 60);
         return minute + ':' + second;
@@ -319,6 +380,18 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
         });
     }
 
+    function getBufferPercent() {
+        if (!_audio) {
+            return 0;
+        }
+        var timeRanges = _audio.buffered;
+        if (timeRanges.length) {
+            // 获取以缓存的时间
+            var timeBuffered = timeRanges.end(timeRanges.length - 1);
+            // 获取缓存进度，值为0到1
+            return timeBuffered / _audio.duration;
+        }
+    }
 
     $rootScope.$on('clear', function() {
         console.log('clear');
@@ -427,7 +500,7 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
                     _tempAudioList = setting.audioList;
                     var arr = data.data.song;
                     arr = arr.map(function(obj) {
-                       return obj.songid;
+                        return obj.songid;
                     });
                     $http.get('getsongsbyids?data=' + encodeURIComponent(JSON.stringify({
                         ids: arr
@@ -491,6 +564,15 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
         setSetting: function(attr, value) {
             if (setting.hasOwnProperty(attr)) {
                 setting[attr] = value;
+            }
+        },
+        setAudiocurrentTime: function(rate) {
+            try {
+                _audio.currentTime = rate * _audio.duration;
+            }
+            catch(e) {
+                _audio.setAudiocurrentTime && _audio.setAudiocurrentTime( (rate - 10) > 0 ? (rate - 10) : 0);
+                console.log('setAudiocurrentTime', e);
             }
         },
         changeLrcTime: _changeLrcTime
@@ -619,7 +701,7 @@ mainModule.controller('listCtrl', ['$rootScope', '$scope', 'MusicService', 'Mess
         }
         audioListUpdate(nu);
     });
-    
+
     $rootScope.$on('searchback.update', function() {
         var isUsrPlay = MusicService.getSetting('isUsrPlay');
         $rootScope.name = isUsrPlay ? '播放列表' : '随心听';
@@ -670,8 +752,8 @@ mainModule.controller('listCtrl', ['$rootScope', '$scope', 'MusicService', 'Mess
 
 mainModule.controller('musciCtrl', ['$rootScope', '$scope', 'MusicService', function($rootScope, $scope, MusicService) {
 
-    $scope.song = {songPicRadio : 'http://7xiblm.com1.z0.glb.clouddn.com/o_19irpgates13ec7n3a1gck1hho9.png'};                                       // 当前播放的歌曲
-    $scope.isoneloop = MusicService.getSetting('isOneLoop');    // 单曲循环
+    $scope.song = {songPicRadio: 'http://7xiblm.com1.z0.glb.clouddn.com/o_19irpgates13ec7n3a1gck1hho9.png'};                                       // 当前播放的歌曲
+    $scope.playMode = MusicService.getSetting('playMode');    // 单曲循环
     $scope.isPlaying = MusicService.getSetting('isplaying');    // 正在播放
 
     $scope.changePlaying = function() {
@@ -709,17 +791,17 @@ mainModule.controller('musciCtrl', ['$rootScope', '$scope', 'MusicService', func
             $scope.song.songPicRadio = 'http://7xiblm.com1.z0.glb.clouddn.com/o_19irpgates13ec7n3a1gck1hho9.png';
         });
     });
-    
+
     $rootScope.$on('clear', function() {
         console.log('clear');
         $rootScope.time = null;
         $scope.song = {songPicRadio: 'http://7xiblm.com1.z0.glb.clouddn.com/o_19irpgates13ec7n3a1gck1hho9.png'};
-        $scope.isoneloop = MusicService.getSetting('isOneLoop');    // 单曲循环
+        $scope.playMode = MusicService.getSetting('playMode');    // 单曲循环
         $scope.isPlaying = false;    // 正在播放
         MusicService.setSetting('isplaying', false);
         $rootScope.$apply();
     });
-    
+
     $scope.prev = function() {
         MusicService.playPrevSong();
     };
@@ -728,8 +810,9 @@ mainModule.controller('musciCtrl', ['$rootScope', '$scope', 'MusicService', func
     };
 
     $scope.changeLoop = function() {
-        MusicService.setSetting('isOneLoop', !$scope.isoneloop);
-        $scope.isoneloop = MusicService.getSetting('isOneLoop');
+        MusicService.setSetting('playMode', (parseInt($scope.playMode) + 1) % 3);
+        console.log(MusicService.getSetting('playMode'));
+        $scope.playMode = MusicService.getSetting('playMode');
     };
     $scope.changeLrc = function(nu) {
         MusicService.changeLrcTime(nu);
