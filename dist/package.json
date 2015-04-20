@@ -1,12 +1,12 @@
 {
-    "name": "an",
-    "version": "1.0.0",
-    "description": "",
-    "main": "app.js",
+    "name": "ngMusic",
+    "version": "2.1.0",
+    "description": "ng Music Player",
+    "main": "server.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "start": "node server.js"
     },
-    "author": "",
+    "author": "SHANG殇",
     "dependencies": {
         "async": "^0.9.0",
         "bufferhelper": "^0.2.0",

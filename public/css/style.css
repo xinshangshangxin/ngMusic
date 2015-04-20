@@ -5,6 +5,7 @@
 .clearmargin {
     margin: 0;
 }
+
 small {
     color: #777777;
 }
@@ -40,7 +41,6 @@ small {
     -webkit-animation: rotate linear 6s infinite;
     -moz-animation: rotate linear 6s infinite;
 }
-
 
 .toast {
     color: white;
@@ -124,7 +124,6 @@ small {
     -webkit-animation: flash 1s linear infinite alternate;
 }
 
-
 #lrcdiv {
     height: 310px;
 }
@@ -141,13 +140,16 @@ small {
     height: 5px;
     border-radius: 4px;
 }
+
 #listgroup::-webkit-scrollbar-button {
     display: none;
 }
+
 #listgroup::-webkit-scrollbar-thumb {
     background: #ccc;
     border-radius: 4px;
 }
+
 #listgroup::-webkit-scrollbar-corner {
     display: none;
 }
@@ -162,6 +164,7 @@ small {
     height: 5px;
     margin-top: 10px;
 }
+
 #currentprogress {
     height: 5px;
     background: #7700C7;
@@ -174,4 +177,9 @@ small {
     background: #ccc;
     width: 0;
     position: absolute;
+}
+
+.playing {
+    color: #31708f;
+    background-color: #d9edf7;
 }

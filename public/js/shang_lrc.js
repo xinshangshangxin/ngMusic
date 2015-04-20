@@ -47,7 +47,7 @@ function shangLrcLoad(oAudio, oLrc) {
             shangLrc.checkUpdate();
         }
     };
-    
+
     shangLrc.clearClass = function() {
         for (var i = 0; i < shangLrc.lrchtmlarr.length; i++) {
             shangLrc.lrchtmlarr[i].className = '';

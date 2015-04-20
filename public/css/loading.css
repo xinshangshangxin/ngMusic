@@ -77,7 +77,6 @@
     animation-delay: 1s;
 }
 
-
 @-webkit-keyframes bounce_circularG {
     0% {
         -webkit-transform: scale(1)
@@ -88,7 +87,6 @@
     }
 
 }
-
 
 @keyframes bounce_circularG {
     0% {

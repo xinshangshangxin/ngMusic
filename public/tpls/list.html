@@ -8,9 +8,9 @@
         <div class="col-xs-4 col-md-2">
             <input class="btn btn-default" type="submit" value="搜索" ng-click="searchSong()">
         </div>
-       <div class="col-xs-12">
-           <hr/>
-       </div>
+        <div class="col-xs-12">
+            <hr/>
+        </div>
     </div>
     <div class="col-xs-12">
         <div class="col-xs-7 col-md-8 ">
@@ -32,10 +32,15 @@
         <div class="list-group" id="listgroup">
             <a href="javascript:void(0);" class="list-group-item"
                ng-repeat="song in songs"
-               data-index="{{$index}}" playaudio>
+               data-index="{{$index}}" ng-class="{'list-group-item-info': $index === $root.currentIndex && isUsrPlay}"
+               playaudio>
                 {{song.songName}}
                 <small class="ng-binding">{{song.artistName}}</small>
-                <removespan></removespan>
+                <!--<removespan></removespan>-->
+                <span class="badge" removespan>
+                    <i class="fa fa-remove" ng-if="isUsrPlay" title="删除"></i>
+                    <i class="fa fa-plus" ng-if="!isUsrPlay" title="添加到用户列表"></i>
+                </span>
             </a>
         </div>
     </div>

@@ -30,16 +30,21 @@ mainModule.directive("pauseaudio", ['MusicService', function(MusicService) {
     }
 }]);
 
-mainModule.directive('removespan', ['MusicService', function(MusicService) {
+mainModule.directive('removespan', ['MusicService', 'MessageService', function(MusicService, MessageService) {
     return {
-        restrict: "E",
-        template: '<span class="badge"><i class="fa fa-remove"></i></span>',
-        replace: true,
+        restrict: "A",
         link: function(scope, ele) {
             ele.on("click", function(e) {
                 e.stopPropagation();
                 var index = ele.parent().attr('data-index');
-                MusicService.removeSong(index);
+                var isUsrPlay = MusicService.getSetting('isUsrPlay');
+                console.log('isUsrPlay', isUsrPlay);
+                if (isUsrPlay) {
+                    MusicService.removeSong(index);
+                }
+                else {
+                    MusicService.addOneSong(index, true);
+                }
             });
         }
     }
@@ -123,7 +128,8 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
     var _audio = new Audio();
     var _lrcObj = null;
     var _userSongIds = [5963228];
-    var _tempAudioList = [];
+    var _userSongList = [];
+    //var _tempAudioList = [];
 
     var setting = {
         currentHadPlayedNu: 0,
@@ -145,7 +151,7 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
         }
     }
 
-    function localSaveUsrInfo() {
+    function _localSaveUsrInfo() {
         var temp = {};      // 去除 不需要的信息保存
         for (var attr in setting) {
             if (setting.hasOwnProperty(attr) && attr != 'audioList' && attr != 'channelList') {
@@ -182,7 +188,11 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
 
 
     _audio.onerror = function() {
-        if (setting.currentHadPlayedNu <= 2) {
+        console.log('_audio.src', _audio.src);
+        if (/\/null$/.test(_audio.src)) {
+            console.log('match null src');
+        }
+        else if (setting.currentHadPlayedNu <= 2) {
             setTimeout(function() {
                 _audio.src = setting.audioList[setting.currentIndex].songLink;
                 _audio.play();
@@ -244,16 +254,19 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
     }
 
     function _playSong(nu) {
+        _clearProgress();
         if (nu || nu === 0) {
             setting.currentIndex = parseInt(nu);
         }
-        else if (setting.currentIndex === -1 || setting.currentIndex >= setting.audioList.length) {
+
+        if (setting.currentIndex === -1 || setting.currentIndex >= setting.audioList.length) {
             console.log('播放参数错误!');
+            //$rootScope.$broadcast('clear');
             return;
         }
         console.log('当前播放nu=   ' + setting.currentIndex);
         playAndAddLrc();
-        localSaveUsrInfo();
+        _localSaveUsrInfo();
     }
 
     function playAndAddLrc() {
@@ -265,6 +278,7 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
 
         $rootScope.alltime = calculateTime(setting.audioList[setting.currentIndex].time);
         $rootScope.$broadcast('current.update');
+        $rootScope.currentIndex = setting.currentIndex;
         MessageService.toastBroadcast(true, setting.audioList[setting.currentIndex].songName, 2000);
 
         _lrcObj = shangLrcLoad(_audio, 'lrcdiv');
@@ -295,14 +309,14 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
         }
     }
 
-    function filterSongs(result) {
+    function filterSongs(result, isAdd2UsrSongList) {
 
         if (!result || !result.data || !result.data.songList) {
             setting.audioList = [];
             return;
         }
         var songArr = result.data.songList;
-        setting.audioList = songArr.filter(function(value) {
+        var tempArr = songArr.filter(function(value) {
             if (value.songLink && /file\.qianqian\.com/.test(value.songLink) && !/serverget\?url/.test(value.songLink)) {
                 value.songLink = 'serverget?url=' + encodeURIComponent(value.songLink);
             }
@@ -311,9 +325,16 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
             }
             return value.rate;
         });
+        setting.audioList = tempArr;
+        if (isAdd2UsrSongList) {
+            _userSongList = tempArr;
+        }
     }
 
     function _searchSong(value) {
+        if (!value) {
+            return;
+        }
         value = value.trim();
         if (value) {
             var defer = $q.defer();
@@ -328,9 +349,7 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
                 });
             return defer.promise;
         }
-        else {
-            MessageService.toastBroadcast(true, '请输入内容', 3000);
-        }
+        return;
     }
 
     function _channelList() {
@@ -393,8 +412,44 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
         }
     }
 
+
+    function _clearProgress() {
+        if (loadedprogressEle && currentProgressEle) {
+            loadedprogressEle.style.width = '0px';
+            currentProgressEle.style.width = '0px';
+        }
+    }
+
+    function _removeSong(index) {
+        var nu = parseInt(index);
+        if (setting.audioList.length === 1 || nu <= -1) {
+            setting.audioList = [];
+            _userSongIds = [];
+            setting.currentIndex = -1;
+            //$rootScope.$broadcast('searchback.update');
+            $rootScope.$broadcast('clear');
+            _localSaveUsrInfo();
+            return;
+        }
+        else if (nu === setting.currentIndex) {
+            _playNextSong();
+        }
+        setting.audioList.splice(nu, 1);
+        _userSongIds.splice(nu, 1);
+        if (nu <= setting.currentIndex) {
+            console.log('currentIndex', -1);
+            setting.currentIndex -= 1;
+        }
+        console.log(setting.currentIndex);
+        $rootScope.currentIndex = setting.currentIndex;
+        $rootScope.$broadcast('searchback.update');
+        console.log(setting.audioList);
+        _localSaveUsrInfo();
+    }
+
+
     $rootScope.$on('clear', function() {
-        console.log('clear');
+        console.log('MusicService clear');
         _lrcObj = shangLrcLoad(_audio, 'lrcdiv');
         _lrcObj.parseLrc('');
         _lrcObj.repaireTimeNu = 0;
@@ -402,6 +457,7 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
         _audio.src = null;
         _audio.load();
     });
+
 
     return {
         channelList: _channelList,
@@ -444,39 +500,38 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
             setting.searchMode = false;
             setting.isUsrPlay = (playMode === 0);
             if (playMode === 0) {
-                var ishadAllUsr = false;
-                for (var i = 0; i < _userSongIds.length; i++) {
-                    ishadAllUsr = false;
-                    for (var j = 0, list = setting.audioList; j < list.length; j++) {
-                        if (_userSongIds[i] === list[j].songId) {
-                            ishadAllUsr = true;
-                            break;
-                        }
-                    }
-                    if (!ishadAllUsr) {
-                        break;
+
+                var ishadAllUsr = true;
+                // clone 排序
+                var tempUsrSongsList = _userSongList.slice(0).sort(function(s1, s2) {
+                    return s1.songId - s2.songId;
+                });
+                var tempUsrSongIds = _userSongIds.slice(0).sort(function(i1, i2) {
+                    return i1 - i2;
+                });
+
+                for (var i = 0; i < tempUsrSongIds.length; i++) {
+                    if (!tempUsrSongsList[i] || tempUsrSongIds[i] !== tempUsrSongsList[i].songId) {
+                        ishadAllUsr = false;
                     }
                 }
-
-                if (!setting.audioList.length) {
-                    ishadAllUsr = false;
-                }
-
 
                 if (ishadAllUsr) {
                     setting.isUsrPlay = true;
+                    setting.audioList = _userSongList;
                     $rootScope.$broadcast('mode.update');
                     MessageService.loadingBroadcast();
                     return;
                 }
 
-                console.log(_userSongIds, setting.audioList);
+                console.log(_userSongIds, _userSongList);
+
                 MessageService.loadingBroadcast(true, '自定义播放列表');
                 $http.get('getsongsbyids?data=' + encodeURIComponent(JSON.stringify({
-                    ids: _userSongIds
-                })))
+                        ids: _userSongIds
+                    })))
                     .success(function(result) {
-                        filterSongs(result);
+                        filterSongs(result, true);
                         setting.isUsrPlay = true;
                         $rootScope.$broadcast('mode.update');
                         MessageService.loadingBroadcast();
@@ -493,18 +548,25 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
             }
             else if (playMode === 2) {
                 setting.searchMode = true;
+                console.log(setting.isUsrPlay);
                 MessageService.loadingBroadcast(true, '搜索' + value + '中...');
                 var promise = _searchSong(value);
+                console.log(promise);
+                if (!promise) {
+                    MessageService.toastBroadcast(true, '请输入内容', 3000);
+                    MessageService.loadingBroadcast();
+                    return;
+                }
                 promise.then(function(data) {
-                    setting.isUsrPlay = true;
-                    _tempAudioList = setting.audioList;
+                    setting.isUsrPlay = false;
+                    //_tempAudioList = setting.audioList;
                     var arr = data.data.song;
                     arr = arr.map(function(obj) {
                         return obj.songid;
                     });
                     $http.get('getsongsbyids?data=' + encodeURIComponent(JSON.stringify({
-                        ids: arr
-                    })))
+                            ids: arr
+                        })))
                         .success(function(result) {
                             filterSongs(result);
                             console.log('setting.audioList', setting.audioList);
@@ -520,41 +582,44 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
             }
             else if (playMode === 3) {
                 MessageService.loadingBroadcast();
-                setting.audioList = _tempAudioList;
+                setting.audioList = _userSongList;
                 setting.isUsrPlay = true;
                 $rootScope.$broadcast('searchback.update');
             }
         },
         searchSong: _searchSong,
-        addOneSong: function(index) {
-            _userSongIds.push(setting.audioList[index].songId);
-            _tempAudioList.push(setting.audioList[index]);
-            setting.audioList = _tempAudioList;
-            setting.currentIndex = _tempAudioList.length - 1;
-            localSaveUsrInfo();
+        addOneSong: function(index, isSetIndes) {
+            console.log(index, isSetIndes);
+            var tempSong = setting.audioList[index];
+            var flag = -1;
+            for (var i = 0; i < _userSongList.length; i++) {
+                if (_userSongList[i].songId === tempSong.songId) {
+                    console.log(_userSongList, tempSong.songId, i);
+                    flag = i;
+                    break;
+                }
+            }
+
+            if (flag === -1) {
+                _userSongIds.push(tempSong.songId);
+                _userSongList.push(tempSong);
+                console.log('addOneSong', _userSongList);
+                setting.currentIndex = _userSongList.length - 1;
+                MessageService.toastBroadcast(true, '添加成功~', 3000);
+            }
+            else {
+                if (isSetIndes) {
+                    setting.currentIndex = flag;
+                }
+                console.log('addOneSong', _userSongList);
+                MessageService.toastBroadcast(true, '已经存在~', 3000);
+            }
+            if (!isSetIndes) {
+                setting.audioList = _userSongList;
+            }
+            _localSaveUsrInfo();
         },
-        removeSong: function(index) {
-            var nu = parseInt(index);
-            if (setting.audioList.length === 1) {
-                setting.audioList = [];
-                _userSongIds = [];
-                setting.currentIndex = -1;
-                $rootScope.$broadcast('searchback.update');
-                $rootScope.$broadcast('clear');
-                return;
-            }
-            else if (nu === setting.currentIndex) {
-                _playNextSong();
-            }
-            setting.audioList.splice(nu, 1);
-            _userSongIds.splice(nu, 1);
-            if (nu <= setting.currentIndex) {
-                setting.currentIndex -= 1;
-            }
-            $rootScope.$broadcast('searchback.update');
-            console.log(setting.audioList);
-            localSaveUsrInfo();
-        },
+        removeSong: _removeSong,
         getSetting: function(attr) {
             if (setting.hasOwnProperty(attr)) {
                 return setting[attr];
@@ -570,11 +635,12 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
             try {
                 _audio.currentTime = rate * _audio.duration;
             }
-            catch(e) {
-                _audio.setAudiocurrentTime && _audio.setAudiocurrentTime( (rate - 10) > 0 ? (rate - 10) : 0);
+            catch (e) {
+                _audio.setAudiocurrentTime && _audio.setAudiocurrentTime((rate - 10) > 0 ? (rate - 10) : 0);
                 console.log('setAudiocurrentTime', e);
             }
         },
+        clearProgress: _clearProgress,
         changeLrcTime: _changeLrcTime
     }
 }]);
@@ -682,9 +748,14 @@ mainModule.controller('listCtrl', ['$rootScope', '$scope', 'MusicService', 'Mess
     $scope.songs = [];              // 播放列表
     $scope.search = {};             // search.name 用来绑定 搜索输入的内容
 
+    $rootScope.$on('clear', function() {
+        $scope.songs = [];
+        $scope.$apply();
+    });
 
     $rootScope.$on('aduioList.update', function() {
-        $scope.isUsrPlay = false;          // 随心听/用户播放列表
+        $scope.isUsrPlay = false;          // 随心听
+        $scope.isadd = true;                // 显示 添加按钮
         audioListUpdate(0);
     });
 
@@ -694,6 +765,7 @@ mainModule.controller('listCtrl', ['$rootScope', '$scope', 'MusicService', 'Mess
         $rootScope.name = isUsrPlay ? '播放列表' : '随心听';
         $scope.isUsrPlay = isUsrPlay;
         $scope.issearch = false;
+        $scope.isadd = !isUsrPlay;
         var nu = MusicService.getSetting('currentIndex');
         console.log(nu);
         if (nu > MusicService.getAudioList().length || nu <= -1) {
@@ -707,10 +779,12 @@ mainModule.controller('listCtrl', ['$rootScope', '$scope', 'MusicService', 'Mess
         $rootScope.name = isUsrPlay ? '播放列表' : '随心听';
         $scope.isUsrPlay = isUsrPlay;
         $scope.issearch = false;
+        $scope.isadd = false;
         $scope.songs = MusicService.getAudioList();
     });
 
     $rootScope.$on('search.update', function() {
+        $scope.isUsrPlay = false;
         $scope.issearch = true;
         $rootScope.name = "搜索 " + $scope.search.name + ' 的结果';
         $scope.songs = MusicService.getAudioList();
@@ -725,7 +799,9 @@ mainModule.controller('listCtrl', ['$rootScope', '$scope', 'MusicService', 'Mess
         console.log('播放列表: ', $scope.songs);
         MessageService.loadingBroadcast();
         MusicService.playSong(nu);
-        MessageService.toastBroadcast(true, $scope.songs[nu].songName, 2000);
+        if ($scope.songs.length) {
+            MessageService.toastBroadcast(true, $scope.songs[nu].songName, 2000);
+        }
     }
 
     $scope.searchSong = function() {
@@ -762,12 +838,11 @@ mainModule.controller('musciCtrl', ['$rootScope', '$scope', 'MusicService', func
     };
 
     $rootScope.$on('current.update', function() {
+        $rootScope.time = null;         // 清空上次播放时间
         var currentSong = MusicService.getCurrentSong();
         $scope.isPlaying = MusicService.getSetting('isplaying');
         $scope.song = currentSong;
         currentSong.songPicRadio = 'http://7xiblm.com1.z0.glb.clouddn.com/o_19irpgates13ec7n3a1gck1hho9.png';               // 先设置默认图片
-
-
         var promise = MusicService.getSongInfo(currentSong.songId);
         promise.then(function(data) {
             var arr = data.data.songList;
@@ -792,14 +867,21 @@ mainModule.controller('musciCtrl', ['$rootScope', '$scope', 'MusicService', func
         });
     });
 
+
     $rootScope.$on('clear', function() {
-        console.log('clear');
+        console.log('musciCtrl clear');
         $rootScope.time = null;
+        $rootScope.alltime = null;
+
         $scope.song = {songPicRadio: 'http://7xiblm.com1.z0.glb.clouddn.com/o_19irpgates13ec7n3a1gck1hho9.png'};
-        $scope.playMode = MusicService.getSetting('playMode');    // 单曲循环
+        $scope.playMode = MusicService.getSetting('playMode');    // 循环模式
         $scope.isPlaying = false;    // 正在播放
-        MusicService.setSetting('isplaying', false);
+
         $rootScope.$apply();
+        $scope.$apply();
+
+        MusicService.clearProgress();
+        MusicService.setSetting('isplaying', false);
     });
 
     $scope.prev = function() {
