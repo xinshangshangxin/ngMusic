@@ -270,8 +270,8 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
     }
 
     function playAndAddLrc() {
-        _audio.src = null;
-        _audio.load();
+        //_audio.src = null;
+        //_audio.load();
         _audio.src = setting.audioList[setting.currentIndex].songLink;
         _audio.play();
         setting.isplaying = true;
