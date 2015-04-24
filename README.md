@@ -14,7 +14,7 @@
 
 ## 安装
 1. 先clone或者下载代码
-2. 在项目根目录下或者dist目录下 `npm install`
+2. 在项目根目录下或者dist目录下 `npm install` (根目录下代码未压缩; dist目录下前端显示代码经过压缩,具体看gulpfile.js)
 3. 运行`node server.js`
 4. 浏览器打开 `http://localhost:1340/`
 
