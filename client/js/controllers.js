@@ -339,7 +339,7 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
         value = value.trim();
         if (value) {
             var defer = $q.defer();
-            $http.get(SERVERURL + '/serverget?url=' + encodeURIComponent('http://sug.music.baidu.com/info/suggestion?format=json&word=' + value + '&version=2&from=0'))
+            $http.get(SERVERURL + 'serverget?url=' + encodeURIComponent('http://sug.music.baidu.com/info/suggestion?format=json&word=' + value + '&version=2&from=0'))
                 .success(function(data) {
                     defer.resolve(data);
                 })

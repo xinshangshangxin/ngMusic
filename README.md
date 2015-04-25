@@ -1,7 +1,9 @@
 # ngMusic_static
 ---------
 
-在线演示: [ngMusic](http://ngmusic.coding.io/)
+在线演示: 
+- [gh-pages](http://ngmusic.xinshangshangxin.com/)
+- [coding](http://ngmusic.coding.io/)
 
 ## html5播放,只支持chrome!!!
 
