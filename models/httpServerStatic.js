@@ -123,8 +123,8 @@ function getSongInfo(req, res) {
 
 function serverPipe(req, res) {
     corsFun(req, res);
-
-    request.get(url.parse(req.url, true).query.url).pipe(res);
+    var u  = url.parse(req.url, true).query.url;
+    request.get(encodeURI(u)).pipe(res);
 }
 
 function serverJson(req, res) {
