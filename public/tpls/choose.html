@@ -8,7 +8,7 @@
             <i class="fa fa-bars"></i>
         </button>
     </div>
-    <ul class="nav nav-tabs" ng-class="showhide">
+    <ul class="nav nav-tabs" ng-class="showhide" ng-show="!ishide">
         <li role="presentation" ng-repeat="channel in channels">
             <a href="javascript:void(0)" data-id="{{channel.channel_id}}" data-name="{{channel.channel_name}}"
                ng-bind="channel.channel_name" loadchannel>
