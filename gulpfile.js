@@ -55,8 +55,8 @@ gulp.task('index', ['move', 'js', 'css'], function() {
 
 
 // Clean
-gulp.task('clean', function(cb) {
-    del(['dist/**/*'], cb);
+gulp.task('clean', function() {
+    del(['dist/client/**/*', '!dist/client/CNAME', '!dist/client/.git']);
 });
 
 // Default task
