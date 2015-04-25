@@ -1,0 +1,18 @@
+<div ng-controller="channelCtrl">
+    <div id="channelChange">
+        <button ng-click="togglePlayer()" class="btn btn-default" title="随心听/用户列表">
+            <i class="fa fa-exchange"></i>
+        </button>
+        <br/>
+        <button ng-click="toggleChannel()" class="btn btn-default" ng-if="!isUsrPlay" title="随心听频道">
+            <i class="fa fa-bars"></i>
+        </button>
+    </div>
+    <ul class="nav nav-tabs" ng-class="showhide">
+        <li role="presentation" ng-repeat="channel in channels">
+            <a href="javascript:void(0)" data-id="{{channel.channel_id}}" data-name="{{channel.channel_name}}"
+               ng-bind="channel.channel_name" loadchannel>
+            </a>
+        </li>
+    </ul>
+</div>

@@ -1,7 +1,7 @@
 set /p info=commit–≈œ¢:
 git add *
 git commit -m %info%
-git push github master
-git push oschina master
-git push coding master
+git push github static:static
+git push oschina static:static
+git push coding static:static
 pause

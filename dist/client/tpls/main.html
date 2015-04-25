@@ -1,0 +1,29 @@
+<div class="row">
+    <div class="col-xs-12">
+        <div ui-view="choose"></div>
+    </div>
+    <div class="col-xs-12 col-md-4">
+        <div ui-view="music">
+        </div>
+    </div>
+    <div class="col-xs-12 col-md-8">
+        <div ui-view="list">
+        </div>
+    </div>
+</div>
+
+
+<div ng-controller="messageCtrl">
+    <div class="modal" ng-if="isLoading">
+        <div class="loading">
+            <div class="circle">
+                <span class="point"></span>
+            </div>
+            <div class="text">{{loadingMsg}}</div>
+        </div>
+    </div>
+
+    <div class="toast" ng-if="isToast">
+        <span class="msg">{{toastMsg}}</span>
+    </div>
+</div>
