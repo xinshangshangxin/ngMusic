@@ -10,7 +10,7 @@
 2. `dist` 为前台静态压缩代码
 3. `server` 为服务器接口代码
 4. 无法直接双击打开 `client/index.html`, 因为需要跨域请求资源
-5. 代码中`client\js\controllers.js` 直接使用了服务器资源; 文件夹 `server` 仅为例子, 并未工作
+5. 代码中`client/js/controllers.js` 直接使用了服务器资源; 文件夹 `server` 仅为例子, 并未工作
 
 ## 安装
 1. 先clone或者下载代码
