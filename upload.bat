@@ -9,4 +9,6 @@ git add *
 git commit -m "auto upload"
 git push github master:gh-pages
 git push gitcafe master:gitcafe-pages
+cd ..
+cd ..
 pause
