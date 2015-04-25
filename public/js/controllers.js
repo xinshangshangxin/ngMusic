@@ -713,23 +713,23 @@ mainModule.controller('channelCtrl', ['$rootScope', '$scope', 'MusicService', 'M
     $scope.toggleChannel = toggleChannel;
     $scope.$on('channel.toggle', toggleChannel);
 
-    var ishide = false;
+    $scope.ishide = false;
 
     function toggleChannel() {
         $scope.channels = MusicService.getSetting('channelList');
-        if (ishide) {
+        if ($scope.ishide) {
             $scope.showhide = 'eleDownIn';
         }
         else {
             $scope.showhide = 'eleDownOut';
         }
-        ishide = !ishide;
+        $scope.ishide = !$scope.ishide;
     }
 
     $scope.togglePlayer = function() {
         var isUsrPlay = MusicService.getSetting('isUsrPlay');
         $scope.isUsrPlay = !isUsrPlay;
-        ishide = false;
+        $scope.ishide = false;
         $scope.showhide = 'eleDownOut';
 
         if (!isUsrPlay) {
