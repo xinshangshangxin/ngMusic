@@ -3,8 +3,11 @@ var request = require('request');
 var url = require('url');
 var async = require('async');
 var log4js = require('log4js');
-var logger = log4js.getLogger();
+log4js.loadAppender('file');
+log4js.addAppender(log4js.appenders.file('./cheese.log'), 'cheese');
+var logger = log4js.getLogger('cheese');
 logger.setLevel('INFO');
+
 
 //var iconv = require('iconv-lite');
 //var BufferHelper = require('bufferhelper'); // bufferHelper.concat(chunk);
@@ -27,8 +30,7 @@ function getSongLinks(req, res) {
                         return obj.id;
                     }));
                 });
-            }
-            else {
+            } else {
                 cb('url error');
             }
         },
@@ -39,8 +41,7 @@ function getSongLinks(req, res) {
         if (err) {
             logger.error(err);
             res.end('');
-        }
-        else {
+        } else {
             res.end(result);
         }
     });
@@ -50,16 +51,13 @@ function getSongsByIds(req, res) {
     var arr = [];
     try {
         arr = JSON.parse(url.parse(req.url, true).query.data).ids;
-    }
-    catch (e) {
+    } catch (e) {
         arr = [];
-    }
-    finally {
+    } finally {
         getSongs(arr, function(error, data) {
             if (error) {
                 res.end('');
-            }
-            else {
+            } else {
                 res.end(data);
             }
         });
@@ -82,8 +80,7 @@ function getSongs(arr, cb) {
             if (!error && response.statusCode === 200) {
                 try {
                     cb(null, body);
-                }
-                catch (e) {
+                } catch (e) {
                     logger.error(e);
                     cb('request songlink');
                 }
@@ -95,12 +92,13 @@ function getSongInfo(req, res) {
     if (req.url && url.parse(req.url, true) && url.parse(req.url, true).query.id) {
         request.post({
             url: 'http://ting.baidu.com/data/music/links',
-            form: {songIds: url.parse(req.url, true).query.id}
+            form: {
+                songIds: url.parse(req.url, true).query.id
+            }
         }, function(err, httpResponse, body) {
             if (err) {
                 res.end(err);
-            }
-            else {
+            } else {
                 res.end(body);
             }
         });
@@ -108,7 +106,8 @@ function getSongInfo(req, res) {
 }
 
 function serverPipe(req, res) {
-    request.get(url.parse(req.url, true).query.url).pipe(res);
+    var u = decodeURI(url.parse(req.url, true).query.url);
+    request.get(u).pipe(res);
 }
 
 function serverJson(req, res) {
@@ -133,39 +132,39 @@ http.createServer(function(req, res) {
 
     switch (fun) {
         case '/getchannellist':
-        {
-            request.get('http://fm.baidu.com/dev/api/?tn=channellist').pipe(res);
-            break;
-        }
+            {
+                request.get('http://fm.baidu.com/dev/api/?tn=channellist').pipe(res);
+                break;
+            }
         case '/getsonglink':
-        {
-            getSongLinks(req, res);
-            break;
-        }
+            {
+                getSongLinks(req, res);
+                break;
+            }
         case '/getsonginfo':
-        {
-            getSongInfo(req, res);
-            break;
-        }
+            {
+                getSongInfo(req, res);
+                break;
+            }
         case '/serverget':
-        {
-            serverPipe(req, res);
-            break;
-        }
+            {
+                serverPipe(req, res);
+                break;
+            }
         case '/getsongsbyids':
-        {
-            getSongsByIds(req, res);
-            break;
-        }
+            {
+                getSongsByIds(req, res);
+                break;
+            }
         case '/serverjson':
-        {
-            serverJson(req, res);
-            break;
-        }
+            {
+                serverJson(req, res);
+                break;
+            }
         default:
-        {
-            res.end('路径错误');
-        }
+            {
+                res.end('路径错误');
+            }
     }
-}).listen(1340, '0.0.0.0');
-logger.info('0.0.0.0:1340');
+}).listen((process.env.VMC_APP_PORT || 3000), (process.env.VCAP_APP_HOST || '0.0.0.0'));
+logger.info((process.env.VMC_APP_PORT || 3000) + ':' + (process.env.VCAP_APP_HOST || '0.0.0.0'));

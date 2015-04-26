@@ -1,6 +1,8 @@
 var mainModule = angular.module('MainModule', []);
-var SERVERURL = 'http://ngmusic.coding.io/node/';
-//var SERVERURL = 'http://localhost:1340/node/';
+//var SERVERURL = 'http://ngmusic.coding.io/node/';
+//var SERVERURL = 'http://localhost:3000/node/';
+var SERVERURL = 'http://121.40.81.63:3000/node/';
+
 
 mainModule.directive("loadchannel", ['$rootScope', 'MusicService', 'MessageService', function($rootScope, MusicService, MessageService) {
     return {
