@@ -11,7 +11,7 @@ var gulp = require('gulp'),
 // move
 gulp.task('move', function() {
     return gulp.src(
-        ['client/framework/**/*', 'client/index.html', 'server/**/*', 'client/tpls/**/*'], {
+        ['client/framework/**/*', 'client/index.html', 'server/**/*', 'client/tpls/**/*', 'client/CNAME'], {
             base: './'
         }
     ).pipe(gulp.dest('dist'));
