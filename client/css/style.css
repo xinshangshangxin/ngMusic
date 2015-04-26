@@ -36,10 +36,10 @@ small {
     -moz-border-radius: 128px;
 }
 
-.player .album_img {
-    animation: rotate linear 6s infinite;
-    -webkit-animation: rotate linear 6s infinite;
-    -moz-animation: rotate linear 6s infinite;
+.player .album_img:hover {
+    animation: rotate linear 1s 1;
+    -webkit-animation: rotate linear 1s 1;
+    -moz-animation: rotate linear 1s 1;
 }
 
 .toast {
@@ -182,4 +182,20 @@ small {
 .playing {
     color: #31708f;
     background-color: #d9edf7;
+}
+
+.nav.nav-tabs {
+    position: fixed;
+    background: #cccccc;
+    z-index: 1000;
+    border-radius: 20px;
+    left: 40px;
+    max-height: 200px;
+}
+
+#channelChange {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
 }

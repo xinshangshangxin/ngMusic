@@ -129,7 +129,7 @@ mainModule.directive('progressdiv', ['MusicService', function(MusicService) {
 mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService', function($http, $q, $rootScope, MessageService) {
     var _timer = null;
     var _audio = new Audio();
-    var _lrcObj = null;
+    var _lrcObj = null;             // 无法初始化 lrcobj
     var _userSongIds = [5963228];
     var _userSongList = [];
     //var _tempAudioList = [];
@@ -284,17 +284,14 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
         $rootScope.currentIndex = setting.currentIndex;
         MessageService.toastBroadcast(true, setting.audioList[setting.currentIndex].songName, 2000);
 
-        _lrcObj = shangLrcLoad(_audio, 'lrcdiv');
+        _lrcObj = shangLrcLoad.getInstance(_audio, 'lrcdiv');
+        _lrcObj.loadNewLrc('', 0);
         $http.get(SERVERURL + 'serverjson?url=http://music.baidu.com' + setting.audioList[setting.currentIndex].lrcLink)
             .success(function(data) {
-                _lrcObj.parseLrc(data.data);
-                _lrcObj.repaireTimeNu = 0;
-                _lrcObj.init();
+                _lrcObj.loadNewLrc(data.data, 0);
             })
             .error(function() {
-                _lrcObj.parseLrc('[00:00]未找到(┬＿┬)');
-                _lrcObj.repaireTimeNu = 0;
-                _lrcObj.init();
+                _lrcObj.loadNewLrc('[00:00]未找到(┬＿┬)', 0);
             });
     }
 
@@ -307,8 +304,8 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
 
     function _changeLrcTime(nu) {
         if (_lrcObj && _audio) {
-            _lrcObj.repaireTimeNu = parseInt(_lrcObj.repaireTimeNu) + parseInt(nu);
-            MessageService.toastBroadcast(true, _lrcObj.repaireTimeNu / 10 + '', 3000);
+            _lrcObj.setRepaireTimeNu(parseInt(_lrcObj.getRepaireTimeNu()) + parseInt(nu));
+            MessageService.toastBroadcast(true, _lrcObj.getRepaireTimeNu() / 10 + '', 3000);
         }
     }
 
@@ -453,7 +450,7 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
         console.log('MusicService clear');
         _lrcObj = shangLrcLoad(_audio, 'lrcdiv');
         _lrcObj.parseLrc('');
-        _lrcObj.repaireTimeNu = 0;
+        _lrcObj.setRepaireTimeNu(0);
         _lrcObj.init();
         _audio.src = null;
         _audio.load();
