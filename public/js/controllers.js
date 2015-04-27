@@ -315,7 +315,8 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
         var songArr = result.data.songList;
         var tempArr = songArr.filter(function(value) {
             if (value.songLink && /file\.qianqian\.com/.test(value.songLink) && !/serverget\?url/.test(value.songLink)) {
-                value.songLink = 'serverget?url=' + encodeURIComponent(value.songLink);
+                // 网盘音乐可能导致整个服务器崩溃, 先分流, 待解决问题!!
+                value.songLink = 'http://cors4ngmusic.coding.io/?fun=fun&url=' + encodeURIComponent(value.songLink);
             }
             else if (value.songLink) {
                 value.songLink = value.songLink.replace('http://yinyueshiting.baidu.com/data2/music/', 'http://musicdata.baidu.com/data2/music/');
@@ -346,7 +347,6 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
                 });
             return defer.promise;
         }
-        return;
     }
 
     function _channelList() {
