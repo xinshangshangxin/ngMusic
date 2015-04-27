@@ -1,19 +1,3 @@
-.nav.nav-tabs {
-    position: fixed;
-    background: #cccccc;
-    z-index: 1000;
-    border-radius: 20px;
-    left: 40px;
-    max-height: 200px;
-}
-
-#channelChange {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1000;
-}
-
 .eleDownIn {
     animation: downIn ease 1s;
     animation-iteration-count: 1;
@@ -43,10 +27,12 @@
     0% {
         opacity: 0;
         transform: translate(0px, -100%);
+        -webkit-transform: translate(0px, -100%);
     }
     100% {
         opacity: 1;
         transform: translate(0px, 0);
+        -webkit-transform: translate(0px, 0);
     }
 }
 
@@ -80,9 +66,37 @@
     0% {
         opacity: 1;
         transform: translate(0, 0);
+        -webkit-transform: translate(0, 0);
     }
     100% {
         opacity: 1;
         transform: translate(0, -200px);
+        -webkit-transform: translate(0, -200px);
+    }
+}
+
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg);
+        -webkit-transform: rotate(0deg);
+        -moz-transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+        -webkit-transform: rotate(360deg);
+        -moz-transform: rotate(360deg);
+    }
+}
+
+@-webkit-keyframes rotate {
+    0% {
+        transform: rotate(0deg);
+        -webkit-transform: rotate(0deg);
+        -moz-transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+        -webkit-transform: rotate(360deg);
+        -moz-transform: rotate(360deg);
     }
 }
