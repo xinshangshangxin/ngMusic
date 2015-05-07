@@ -5,7 +5,8 @@ var gulp = require('gulp'),
     del = require('del'),
     rev = require('gulp-rev'),
     minifyhtml = require('gulp-minify-html'),
-    inject = require('gulp-inject');
+    inject = require('gulp-inject'),
+    manifest = require('gulp-manifest');
 
 
 // move
@@ -54,12 +55,27 @@ gulp.task('index', ['move', 'js', 'css'], function() {
 });
 
 
+//manifest
+gulp.task('manifest', ['index'], function() {
+    gulp.src(['dist/client/**/*', '!dist/client/index.html'])
+        .pipe(
+            manifest({
+                hash: true,
+                preferOnline: true,
+                network: ['http://*', 'https://*', '*'],
+                filename: 'app.manifest',
+                exclude: ['app.manifest', 'CNAME']
+            })
+        ).pipe(gulp.dest('dist/client'));
+});
+
+
 // Clean
-gulp.task('clean', function() {
-    del(['dist/client/**/*', '!dist/client/CNAME', '!dist/client/.git']);
+gulp.task('clean', function(cb) {
+    del(['dist/client/**/*', '!dist/client/CNAME', '!dist/client/.git'], cb);
 });
 
 // Default task
 gulp.task('default', ['clean'], function() {
-    gulp.start('index');
+    gulp.start('manifest');
 });

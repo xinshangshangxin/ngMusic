@@ -1,0 +1,1 @@
+var musicApp=angular.module("MusicApp",["ui.router","MainModule"]);musicApp.config(["$stateProvider","$urlRouterProvider",function(e,t){t.otherwise("/index"),e.state("index",{url:"/index",views:{"":{templateUrl:"tpls/main.html"},"choose@index":{templateUrl:"tpls/choose.html"},"list@index":{templateUrl:"tpls/list.html"},"music@index":{templateUrl:"tpls/musicctrl.html"}}})}]);

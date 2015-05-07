@@ -8,11 +8,12 @@ shangLrcLoad = (function() {
 
     var instantiated = null;    // 单例
 
-
+    // 初始化单例
     function _instance(oAudio, oLrc) {
 
-
+        // audio对象
         oAudio = typeof(oAudio) === 'string' ? document.getElementById(oAudio) : oAudio;
+        // Lrc对象
         oLrc = (typeof(oLrc) === 'string') ? document.getElementById(oLrc) : oLrc;
 
         var _currentNu = 1;         // 当前播放歌词
@@ -54,18 +55,25 @@ shangLrcLoad = (function() {
          * @private
          */
         function _scrollLrc() {
+            // 当前 在第几句歌词上
             _currentNu++;
+            // 判断越界问题
             if (typeof _lrcArr[_currentNu] !== "undefined") {
-                clearInterval(_scrollTimer);
 
+                // 当多次调用是清除上次 的setInterval
+                clearInterval(_scrollTimer);
+                // 下一次歌词更新时间
                 _nextUpdateTime = _lrcArr[_currentNu].time;
+                // 清除和添加高亮样式
                 _lrcArrhtmlarr[_currentNu - 2].className = '';
                 _lrcArrhtmlarr[_currentNu - 1].className = 'current';
 
+                // 歌词要移动的目标位置
                 var target = _lrcArrhtmlarr[_currentNu - 1].moveHeight - _lrcArrhtmlarr[0].moveHeight - _repaireHeight;
                 target = target > 0 ? parseInt(target) : 0;
                 var obj = _divContent;
                 var currentTop = obj.scrollTop;
+                // 滚动歌词
                 _scrollTimer = setInterval(function() {
                     var dir = -8;
                     var curspeed = (target - currentTop) / -dir;
@@ -82,7 +90,7 @@ shangLrcLoad = (function() {
         }
 
 
-        // 只需要添加一次
+        // 添加监听
         oAudio.addEventListener("seeked", function() {
             _currentNu = 1;
             _nextUpdateTime = -1;
@@ -94,11 +102,13 @@ shangLrcLoad = (function() {
 
         _divContent.id = 'shang_lrc_div';
         oLrc.appendChild(_divContent);
+        // 设置相对定位的父元素
+        oLrc.style.position = 'relative';
 
-
+        // 设置 样式和定位
         var cssStyle = document.createElement('style');
         cssStyle.type = 'text/css';
-        cssStyle.innerHTML = '#shang_lrc_div{margin:0;padding:0;overflow-y:scroll;overflow-x:hidden;height:100%}#shang_lrc_div::-webkit-scrollbar{width:5px;height:5px;border-radius:4px}#shang_lrc_div::-webkit-scrollbar-button{display:none}#shang_lrc_div::-webkit-scrollbar-thumb{background:#ccc;border-radius:4px}#shang_lrc_div::-webkit-scrollbar-corner{display:none}.current{color:blueviolet;font-weight:bold}';
+        cssStyle.innerHTML = '#shang_lrc_div{margin:0;padding:0;overflow-y:scroll;overflow-x:hidden;height:100%; width:100%; position: absolute}#shang_lrc_div::-webkit-scrollbar{width:5px;height:5px;border-radius:4px}#shang_lrc_div::-webkit-scrollbar-button{display:none}#shang_lrc_div::-webkit-scrollbar-thumb{background:#ccc;border-radius:4px}#shang_lrc_div::-webkit-scrollbar-corner{display:none}.current{color:blueviolet;font-weight:bold}';
         document.getElementsByTagName('head')[0].appendChild(cssStyle);
 
 
@@ -114,18 +124,24 @@ shangLrcLoad = (function() {
                 return a.time - b.time;
             });
 
+            // 内层 div; 用以添加 P标签
             var tempDiv = document.createElement('div');
             _divContent.appendChild(tempDiv);
 
             for (var i = 0; i < _lrcArr.length; i++) {
                 var ptemp = document.createElement('p');
+                // 将每次生成的P放入数组
                 _lrcArrhtmlarr.push(ptemp);
+                // 添加显示内容
                 ptemp.innerHTML = _lrcArr[i].lrcstr;
+                // 显示P标签
                 tempDiv.appendChild(ptemp);
+                // 计算P标签的高度
                 ptemp.moveHeight = ptemp.offsetTop;
             }
         }
 
+        // 歌词解析
         function parseLrc(lrcstr) {
             var lrclines = lrcstr.split('\n');
             for (var i = 0; i < lrclines.length; i++) {
@@ -141,21 +157,26 @@ shangLrcLoad = (function() {
             }
         }
 
+        // 清除 高亮显示
         function clearClass() {
             for (var i = 0; i < _lrcArrhtmlarr.length; i++) {
                 _lrcArrhtmlarr[i].className = '';
             }
         }
 
+        // 修正歌词播放时间 (即可能歌词慢了0.1s)
         function setRepaireTimeNu(nu) {
             _repaireTimeNu = nu;
         }
 
+        // 获取修正时间
         function getRepaireTimeNu() {
             return _repaireTimeNu;
         }
 
+        // 载入新的lrc
         function loadNewLrc(data, repaireTime) {
+            // 清楚和复位
             _divContent.innerHTML = '';
             _currentNu = 1;
             _nextUpdateTime = -1;
@@ -168,16 +189,17 @@ shangLrcLoad = (function() {
         }
 
         return {
-            init: init,
-            parseLrc: parseLrc,
-            clearClass: clearClass,
-            setRepaireTimeNu: setRepaireTimeNu,
+            init: init,                         // 初始化
+            parseLrc: parseLrc,                 // 解析lrc
+            clearClass: clearClass,             // 清除 高亮
+            setRepaireTimeNu: setRepaireTimeNu, //  修正歌词播放时间
             getRepaireTimeNu: getRepaireTimeNu,
-            loadNewLrc: loadNewLrc
+            loadNewLrc: loadNewLrc              // 载入新的歌词 [包含了init和parseLrc和setRepaireTimeNu]
         }
     }
 
     return {
+        // 返回获取单例
         getInstance: function(oAudio, oLrc) {
             if (!instantiated) {
                 instantiated = _instance(oAudio, oLrc);
