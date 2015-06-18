@@ -406,7 +406,7 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
 
     function _channelList() {
         var defer = $q.defer();
-        $http.get(SERVERURL + 'getchannellist').success(function(data) {
+        $http.get(SERVERURL + '/getchannellist').success(function(data) {
             defer.resolve(data.channel_list);
         }).error(function(err) {
             defer.reject(err);
@@ -417,7 +417,7 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
 
     function _songlink(id) {
         var defer = $q.defer();
-        $http.get(SERVERURL + 'getsonglink?id=' + id).success(function(arr) {
+        $http.get(SERVERURL + '/getsonglink?id=' + id).success(function(arr) {
             defer.resolve(arr);
         }).error(function(err) {
             defer.reject(err);
@@ -516,7 +516,7 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
         songlink: _songlink,
         getSongInfo: function(id) {
             var defer = $q.defer();
-            $http.get(SERVERURL + 'getsonginfo?id=' + id).success(function(arr) {
+            $http.get(SERVERURL + '/getsonginfo?id=' + id).success(function(arr) {
                 defer.resolve(arr);
             }).error(function(err) {
                 defer.reject(err);
@@ -579,7 +579,7 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
                 console.log(_userSongIds, _userSongList);
 
                 MessageService.loadingBroadcast(true, '自定义播放列表');
-                $http.get(SERVERURL + 'getsongsbyids?data=' + encodeURIComponent(JSON.stringify({
+                $http.get(SERVERURL + '/getsongsbyids?data=' + encodeURIComponent(JSON.stringify({
                         ids: _userSongIds
                     })))
                     .success(function(result) {
@@ -616,7 +616,7 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
                     arr = arr.map(function(obj) {
                         return obj.songid;
                     });
-                    $http.get(SERVERURL + 'getsongsbyids?data=' + encodeURIComponent(JSON.stringify({
+                    $http.get(SERVERURL + '/getsongsbyids?data=' + encodeURIComponent(JSON.stringify({
                             ids: arr
                         })))
                         .success(function(result) {
