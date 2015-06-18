@@ -25,6 +25,25 @@ module.exports = function(app) {
     app.get('/node/serverget', httpServerStatic.serverGet);
     app.get('/node/serverjson', httpServerStatic.serverJson);
     app.get('/node/getsongsbyids', httpServerStatic.getSongsByIds);
+    
+    
+    // 获取 用户歌曲列表
+    app
+        .options('/node/usersongs', function(req, res) {
+            res.setHeader('Access-Control-Allow-Origin', 'http://ngmusic.xinshangshangxin.com');
+            res.setHeader('Access-Control-Allow-Credentials', true);
+            res.setHeader('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS');
+            res.setHeader("Access-Control-Allow-Headers", 'x-access-token, Content-Type'); //请求头类型
+            res.send(200);
+        })
+        .get('/node/usersongs', check, function(req, res) {
+            console.log(req.decoded);
+            songServer.getSongs(req, res);
+        })
+        .put('/node/usersongs', check, function(req, res) {
+            console.log(req.decoded);
+            songServer.putSongs(req, res);
+        });
 
     // 获取 用户歌曲列表
     app
