@@ -127,6 +127,9 @@ shangLrcLoad = (function() {
         }
 
         function parseLrc(lrcstr) {
+            if(!lrcstr) {
+                return;
+            }
             var lrclines = lrcstr.split('\n');
             for (var i = 0; i < lrclines.length; i++) {
                 var timeandlrc = lrclines[i].split(']');

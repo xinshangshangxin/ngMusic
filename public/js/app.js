@@ -15,5 +15,11 @@ musicApp.config(['$stateProvider', '$urlRouterProvider',function($stateProvider,
                     templateUrl: 'tpls/musicctrl.html'
                 }
             }
+        })
+        .state('login', {
+            url: '/login',
+            views: {
+                '': {templateUrl: 'tpls/login.html'}
+            }
         });
 }]);
