@@ -938,7 +938,7 @@ mainModule.controller('musciCtrl', ['$rootScope', '$scope', 'MusicService', func
                     value.songPicRadio = imgUrl.match(/http:\/\/qukufile2\.qianqian\.com.*?jpg/)[0];
                 }
                 else {
-                    value.songPicRadio = SERVERURL + 'serverget?url=' + encodeURIComponent(value.songPicRadio);
+                    value.songPicRadio = SERVERURL + '/serverget?url=' + encodeURIComponent(value.songPicRadio);
                 }
                 $scope.song.songPicRadio = value.songPicRadio;
             }
