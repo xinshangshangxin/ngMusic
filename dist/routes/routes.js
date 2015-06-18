@@ -29,7 +29,7 @@ module.exports = function(app) {
     // 获取 用户歌曲列表
     app
         .options('/usersongs', function(req, res) {
-            res.setHeader('Access-Control-Allow-Origin', req.host || '*');
+            res.setHeader('Access-Control-Allow-Origin', 'ngmusic.xinshangshangxin.com, ngmusic.coding.io, *');
             res.setHeader('Access-Control-Allow-Credentials', true);
             res.setHeader('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS');
             res.setHeader("Access-Control-Allow-Headers", 'x-access-token, Content-Type'); //请求头类型
@@ -52,7 +52,7 @@ function getIndex(req, res) {
 
 
 function check(req, res, next) {
-    res.setHeader('Access-Control-Allow-Origin', req.host || '*');
+    res.setHeader('Access-Control-Allow-Origin', 'ngmusic.xinshangshangxin.com, ngmusic.coding.io, *');
     res.setHeader('Access-Control-Allow-Credentials', true); //是否支持cookie跨域
     res.setHeader('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS');
     res.setHeader("Access-Control-Allow-Headers", 'x-access-token'); //请求头类型
