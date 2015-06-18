@@ -2,7 +2,7 @@ var mainModule = angular.module('MainModule', []);
 var SEARCHURL = 'http://cors.coding.io';
 var SERVERURL = 'http://ngmusic.coding.io/node';
 
-var LOGINURL = 'http://iuser.coding.io/auth';
+var LOGINURL = 'http://iuser.coding.io';
 
 mainModule.directive("loadchannel", ['$rootScope', 'MusicService', 'MessageService', function($rootScope, MusicService, MessageService) {
     return {
@@ -938,7 +938,7 @@ mainModule.controller('musciCtrl', ['$rootScope', '$scope', 'MusicService', func
                     value.songPicRadio = imgUrl.match(/http:\/\/qukufile2\.qianqian\.com.*?jpg/)[0];
                 }
                 else {
-                    value.songPicRadio = 'serverget?url=' + encodeURIComponent(value.songPicRadio);
+                    value.songPicRadio = SERVERURL + 'serverget?url=' + encodeURIComponent(value.songPicRadio);
                 }
                 $scope.song.songPicRadio = value.songPicRadio;
             }
@@ -998,12 +998,38 @@ mainModule.controller('loginCtrl', ['$scope', '$http', '$state', 'MessageService
     }
 
     $scope.login = login;
+    $scope.regist = regist;
     $scope.username = 'shang';
+
+    function regist() {
+        MessageService.loadingBroadcast(true, '注册中');
+        $http({
+            url: LOGINURL + '/',
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            data: 'username=' + $scope.username + '&password=' + $scope.password
+        })
+            .success(function(user) {
+                MessageService.loadingBroadcast(false);
+                if (user.errCode === -1) {
+                    MessageService.toastBroadcast(true, user.data || '注册失败~~', 3000);
+                }
+                else {
+                    localStorage.setItem('token', user.data.token);
+                    $state.go('index');
+                }
+            })
+            .error(function(e) {
+                MessageService.loadingBroadcast(false);
+                MessageService.toastBroadcast(true, '注册失败,请检查网络~~', 3000);
+                console.log(e);
+            });
+    }
 
     function login() {
         MessageService.loadingBroadcast(true, '登陆中');
         $http({
-            url: LOGINURL,
+            url: LOGINURL + '/auth',
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             data: 'username=' + $scope.username + '&password=' + $scope.password
