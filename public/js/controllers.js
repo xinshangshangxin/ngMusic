@@ -1,10 +1,11 @@
-var mainModule = angular.module('MainModule', []);
+var mainModule = angular.module('MainModule', ['imgModule']);
 var SEARCHURL = 'http://cors.coding.io';
 var SERVERURL = 'http://ngmusic.coding.io/node';
+//var SERVERURL = 'http://localhost:1340/node';
 
 var LOGINURL = 'http://iuser.coding.io';
 
-mainModule.directive("loadchannel", ['$rootScope', 'MusicService', 'MessageService', function($rootScope, MusicService, MessageService) {
+mainModule.directive("loadchannel", ['$rootScope', 'MusicFactory', 'MessageFactory', function($rootScope, MusicFactory, MessageFactory) {
     return {
         restrict: "AE",
         link: function(scope, ele) {
@@ -13,80 +14,80 @@ mainModule.directive("loadchannel", ['$rootScope', 'MusicService', 'MessageServi
                 var id = ele.attr('data-id');
                 $rootScope.name = '随心听: ' + ele.attr('data-name');
                 $rootScope.$apply();
-                MusicService.updateList(id);
-                MessageService.channelChange();
-                MessageService.loadingBroadcast(true, '加载中...');
+                MusicFactory.updateList(id);
+                MessageFactory.channelChange();
+                MessageFactory.loadingBroadcast(true, '加载中...');
             });
         }
     }
 }]);
 
-mainModule.directive("pauseaudio", ['MusicService', function(MusicService) {
+mainModule.directive("pauseaudio", ['MusicFactory', function(MusicFactory) {
     return {
         restrict: "A",
         link: function(scope, ele) {
             ele.on("click", function(e) {
                 e.stopPropagation();
-                MusicService.playorpauseSong();
+                MusicFactory.playorpauseSong();
             });
         }
     }
 }]);
 
-mainModule.directive('removespan', ['MusicService', 'MessageService', function(MusicService, MessageService) {
+mainModule.directive('removespan', ['MusicFactory', function(MusicFactory) {
     return {
         restrict: "A",
         link: function(scope, ele) {
             ele.on("click", function(e) {
                 e.stopPropagation();
                 var index = ele.parent().attr('data-index');
-                var isUsrPlay = MusicService.getSetting('isUsrPlay');
+                var isUsrPlay = MusicFactory.getSetting('isUsrPlay');
                 console.log('isUsrPlay', isUsrPlay);
                 if (isUsrPlay) {
-                    MusicService.removeSong(index);
+                    MusicFactory.removeSong(index);
                 }
                 else {
-                    MusicService.addOneSong(index, true);
+                    MusicFactory.addOneSong(index, true);
                 }
             });
         }
     }
 }]);
 
-mainModule.directive("playaudio", ['MusicService', function(MusicService) {
+mainModule.directive("playaudio", ['MusicFactory', function(MusicFactory) {
     return {
         restrict: "AE",
         link: function(scope, ele) {
             ele.on("click", function(e) {
                 e.stopPropagation();
                 var index = ele.attr('data-index');
-                console.log('searchMode', MusicService.getSetting('searchMode'));
-                if (MusicService.getSetting('searchMode')) {
-                    MusicService.addOneSong(index);
-                    MusicService.changePlayer(0);
+                console.log('searchMode', MusicFactory.getSetting('searchMode'));
+                if (MusicFactory.getSetting('searchMode')) {
+                    MusicFactory.addOneSong(index);
+                    MusicFactory.changePlayer(0);
                 }
                 else {
-                    MusicService.playSong(index);
+                    MusicFactory.playSong(index);
                 }
             });
         }
     }
 }]);
 
-mainModule.directive('detectiveenter', ['MusicService', function(MusicService) {
+mainModule.directive('detectiveenter', ['MusicFactory', function(MusicFactory) {
     return {
         restrict: "AE",
         link: function(scope, ele) {
             ele.on('keydown', function(e) {
                 if (e.keyCode === 13) {
-                    MusicService.changePlayer(2, ele[0].value);
+                    MusicFactory.changePlayer(2, ele[0].value);
                 }
             });
         }
     }
 }]);
 
-mainModule.directive('progressdiv', ['MusicService', function(MusicService) {
+mainModule.directive('progressdiv', ['MusicFactory', function(MusicFactory) {
     return {
         restrict: 'AE',
         link: function(scope, ele) {
@@ -106,7 +107,7 @@ mainModule.directive('progressdiv', ['MusicService', function(MusicService) {
                         nu = rect.width;
                     }
                     currentProgressEle.style.width = nu + 'px';
-                    MusicService.setAudiocurrentTime(nu / rect.width);
+                    MusicFactory.setAudiocurrentTime(nu / rect.width);
                 }
                 e.stopPropagation();
                 e.preventDefault();
@@ -126,7 +127,7 @@ mainModule.directive('progressdiv', ['MusicService', function(MusicService) {
     }
 }]);
 
-mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService', function($http, $q, $rootScope, MessageService) {
+mainModule.factory('MusicFactory', ['$http', '$q', '$rootScope', 'MessageFactory', function($http, $q, $rootScope, MessageFactory) {
     var _timer = null;
     var _audio = new Audio();
     var _lrcObj = null;
@@ -174,7 +175,7 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
 
     function _getSongs() {
         var derered = $q.defer();
-        MessageService.loadingBroadcast(true, '获取中~~', 1000);
+        MessageFactory.loadingBroadcast(true, '获取中~~', 1000);
         $http({
             url: SERVERURL + '/usersongs',
             method: 'GET',
@@ -183,7 +184,7 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
             },
             withCredentials: true
         }).success(function(data) {
-            MessageService.loadingBroadcast(false);
+            MessageFactory.loadingBroadcast(false);
             if (data.errCode === -1) {
                 derered.reject('请重新登录~');
             }
@@ -213,7 +214,7 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
                     location.href = '/#/login';
                 }
                 else {
-                    ishow && MessageService.toastBroadcast(true, '上传成功!', 3000);
+                    ishow && MessageFactory.toastBroadcast(true, '上传成功!', 3000);
                 }
             })
             .error(function() {
@@ -258,7 +259,7 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
             clearTimeout(_timer);
             _timer = setTimeout(function() {
                 setting.currentHadPlayedNu = 0;
-                MessageService.toastBroadcast(true, '加载失败,播放下一首(┬＿┬)', 1000);
+                MessageFactory.toastBroadcast(true, '加载失败,播放下一首(┬＿┬)', 1000);
                 _playNextSong();
             }, 1000);
         }
@@ -334,7 +335,7 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
         $rootScope.alltime = calculateTime(setting.audioList[setting.currentIndex].time);
         $rootScope.$broadcast('current.update');
         $rootScope.currentIndex = setting.currentIndex;
-        MessageService.toastBroadcast(true, setting.audioList[setting.currentIndex].songName, 2000);
+        MessageFactory.toastBroadcast(true, setting.audioList[setting.currentIndex].songName, 2000);
 
         _lrcObj = shangLrcLoad.getInstance(_audio, 'lrcdiv');
         $http.get(SEARCHURL + '?method=get&callback=obj&url=http://music.baidu.com' + setting.audioList[setting.currentIndex].lrcLink)
@@ -357,7 +358,7 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
     function _changeLrcTime(nu) {
         if (_lrcObj && _audio) {
             _lrcObj.setRepaireTimeNu(parseInt(_lrcObj.getRepaireTimeNu()) + parseInt(nu));
-            MessageService.toastBroadcast(true, _lrcObj.getRepaireTimeNu() / 10 + '', 3000);
+            MessageFactory.toastBroadcast(true, _lrcObj.getRepaireTimeNu() / 10 + '', 3000);
         }
     }
 
@@ -391,7 +392,7 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
         value = value.trim();
         if (value) {
             var defer = $q.defer();
-            //MessageService.loadingBroadcast(true, '搜索中.....');
+            //MessageFactory.loadingBroadcast(true, '搜索中.....');
             $http.get(SEARCHURL + '?method=get&url=' + encodeURIComponent('http://sug.music.baidu.com/info/suggestion?format=json&word=' + value + '&version=2&from=0'))
                 .success(function(data) {
                     defer.resolve(data);
@@ -443,8 +444,8 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
             setting.channelList = data;
             var ran = Math.floor(Math.random() * data.length);
             _updateList(ran);
-            MessageService.channelChange();
-            MessageService.loadingBroadcast(true, data[ran].channel_name);
+            MessageFactory.channelChange();
+            MessageFactory.loadingBroadcast(true, data[ran].channel_name);
             $rootScope.name = data[ran].channel_name;
         }, function(err) {
             console.log('加载channel出错', err);
@@ -501,7 +502,7 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
 
 
     $rootScope.$on('clear', function() {
-        console.log('MusicService clear');
+        console.log('MusicFactory clear');
         _lrcObj = shangLrcLoad(_audio, 'lrcdiv');
         _lrcObj.parseLrc('');
         _lrcObj.setRepaireTimeNu(0);
@@ -548,7 +549,7 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
         changePlayer: function(playMode, value) {
             // 0 userplay  1 channelplay 2 searchplay 3, back    other usrplay
 
-            MessageService.loadingBroadcast(true, '加载中');
+            MessageFactory.loadingBroadcast(true, '加载中...');
             setting.searchMode = false;
             setting.isUsrPlay = (playMode === 0);
             if (playMode === 0) {
@@ -572,41 +573,42 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
                     setting.isUsrPlay = true;
                     setting.audioList = _userSongList;
                     $rootScope.$broadcast('mode.update');
-                    MessageService.loadingBroadcast();
+                    MessageFactory.loadingBroadcast();
                     return;
                 }
 
                 console.log(_userSongIds, _userSongList);
 
-                MessageService.loadingBroadcast(true, '自定义播放列表');
-                $http.get(SERVERURL + '/getsongsbyids?data=' + encodeURIComponent(JSON.stringify({
+                MessageFactory.loadingBroadcast(true, '自定义播放列表');
+                $http.get(SERVERURL + '/getsongsbyids?data='
+                    + encodeURIComponent(JSON.stringify({
                         ids: _userSongIds
                     })))
                     .success(function(result) {
                         filterSongs(result, true);
                         setting.isUsrPlay = true;
                         $rootScope.$broadcast('mode.update');
-                        MessageService.loadingBroadcast();
+                        MessageFactory.loadingBroadcast();
                     })
                     .error(function(error) {
                         console.log(error);
-                        MessageService.loadingBroadcast();
+                        MessageFactory.loadingBroadcast();
                     }
                 );
             }
             else if (playMode === 1) {
-                MessageService.loadingBroadcast();
+                MessageFactory.loadingBroadcast();
                 getChannelsAndPlay();
             }
             else if (playMode === 2) {
                 setting.searchMode = true;
                 console.log(setting.isUsrPlay);
-                MessageService.loadingBroadcast(true, '搜索' + value + '中...');
+                MessageFactory.loadingBroadcast(true, '搜索' + value + '中...');
                 var promise = _searchSong(value);
                 console.log(promise);
                 if (!promise) {
-                    MessageService.toastBroadcast(true, '请输入内容', 3000);
-                    MessageService.loadingBroadcast();
+                    MessageFactory.toastBroadcast(true, '请输入内容', 3000);
+                    MessageFactory.loadingBroadcast();
                     return;
                 }
                 promise.then(function(data) {
@@ -623,17 +625,17 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
                             filterSongs(result);
                             console.log('setting.audioList', setting.audioList);
                             $rootScope.$broadcast('search.update');
-                            MessageService.loadingBroadcast();
+                            MessageFactory.loadingBroadcast();
                         })
                         .error(function(error) {
                             console.log(error);
-                            MessageService.loadingBroadcast();
+                            MessageFactory.loadingBroadcast();
                         }
                     );
                 });
             }
             else if (playMode === 3) {
-                MessageService.loadingBroadcast();
+                MessageFactory.loadingBroadcast();
                 setting.audioList = _userSongList;
                 setting.isUsrPlay = true;
                 $rootScope.$broadcast('searchback.update');
@@ -657,18 +659,19 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
                 _userSongList.push(tempSong);
                 console.log('addOneSong', _userSongList);
                 setting.currentIndex = _userSongList.length - 1;
-                MessageService.toastBroadcast(true, '添加成功~', 3000);
+                MessageFactory.toastBroadcast(true, '添加成功~', 3000);
             }
             else {
                 if (isSetIndes) {
                     setting.currentIndex = flag;
                 }
                 console.log('addOneSong', _userSongList);
-                MessageService.toastBroadcast(true, '已经存在~', 3000);
+                MessageFactory.toastBroadcast(true, '已经存在~', 3000);
             }
             if (!isSetIndes) {
                 setting.audioList = _userSongList;
             }
+            _upload();
             _localSaveUsrInfo();
         },
         removeSong: _removeSong,
@@ -699,78 +702,102 @@ mainModule.service('MusicService', ['$http', '$q', '$rootScope', 'MessageService
     }
 }]);
 
-mainModule.service('MessageService', ['$rootScope', function($rootScope) {
-
-    var _timer = null;
-
-    var _isloading = false;
-    var _loadingMsg = '';
-
-    var _istoast = false;
-    var _toastMsg = '';
+mainModule.factory('MessageFactory', ['$rootScope', '$timeout', function($rootScope, $timeout) {
+    var _loadingtimer = null;
+    var _toasttimer = null;
 
     return {
-        loadingBroadcast: function(isloading, msg) {
-            this.setLoading(isloading || false);
-            this.setLoadingMsg(msg || '');
-            this.broadcast();
-        },
-        setLoading: function(isloading) {
-            _isloading = isloading;
-        },
-        getLoading: function() {
-            return _isloading;
-        },
-        setLoadingMsg: function(msg) {
-            _loadingMsg = msg;
-        },
-        getLoadingMsg: function() {
-            return _loadingMsg;
+        loadingBroadcast: function(isloading, msg, time) {
+            $rootScope.$broadcast('loading', isloading, msg);
+            time = parseInt(time) || 60 * 1000;
+            $timeout.cancel(_loadingtimer);
+            _loadingtimer = $timeout(function() {
+                $rootScope.$broadcast('loading', false, msg);
+            }, time);
         },
         toastBroadcast: function(istoast, msg, time) {
-            this.settoast(istoast || false);
-            this.settoastMsg(msg || '');
-            this.broadcast();
-            if (parseInt(time)) {
-                var _this = this;
-                clearTimeout(_timer);
-                _timer = setTimeout(function() {
-                    _this.toastBroadcast(false);
-                }, parseInt(time));
-            }
-        },
-        settoast: function(istoast) {
-            _istoast = istoast;
-        },
-        gettoast: function() {
-            return _istoast;
-        },
-        settoastMsg: function(msg) {
-            _toastMsg = msg;
-        },
-        gettoastMsg: function() {
-            return _toastMsg;
-        },
-        broadcast: function() {
-            $rootScope.$broadcast('message.update');
+            $rootScope.$broadcast('toast', istoast, msg);
+            time = parseInt(time) || 3 * 1000;
+            $timeout.cancel(_toasttimer);
+            _toasttimer = $timeout(function() {
+                $rootScope.$broadcast('toast', false, msg);
+            }, time);
         },
         channelChange: function() {
             $rootScope.$broadcast('channel.toggle');
         }
     };
+
 }]);
 
-mainModule.controller('channelCtrl', ['$rootScope', '$scope', 'MusicService', 'MessageService', function($rootScope, $scope, MusicService, MessageService) {
+mainModule.factory('UserFactory', ['$http', '$state', 'MessageFactory', function($http, $state, MessageFactory) {
+    function regist(username, password) {
+        MessageFactory.loadingBroadcast(true, '注册中');
+        $http({
+            url: LOGINURL + '/',
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            data: 'username=' + username + '&password=' + password
+        })
+            .success(function(user) {
+                MessageFactory.loadingBroadcast(false);
+                if (user.errCode === -1) {
+                    MessageFactory.toastBroadcast(true, user.data || '注册失败~~', 3000);
+                }
+                else {
+                    localStorage.setItem('token', user.data.token);
+                    $state.go('index');
+                }
+            })
+            .error(function(e) {
+                MessageFactory.loadingBroadcast(false);
+                MessageFactory.toastBroadcast(true, '注册失败,请检查网络~~', 3000);
+                console.log(e);
+            });
+    }
+
+    function login(username, password) {
+        MessageFactory.loadingBroadcast(true, '登陆中...');
+        $http({
+            url: LOGINURL + '/auth',
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            data: 'username=' + username + '&password=' + password
+        })
+            .success(function(user) {
+                MessageFactory.loadingBroadcast(false);
+                if (user.errCode === -1) {
+                    MessageFactory.toastBroadcast(true, user.data || '登录失败~~', 3000);
+                }
+                else {
+                    localStorage.setItem('token', user.data.token);
+                    $state.go('index');
+                }
+            })
+            .error(function(e) {
+                MessageFactory.loadingBroadcast(false);
+                MessageFactory.toastBroadcast(true, '登录失败,请检查网络~~', 3000);
+                console.log(e);
+            });
+    }
+
+    return {
+        login: login,
+        regist: regist
+    };
+}]);
+
+mainModule.controller('channelCtrl', ['$rootScope', '$scope', 'MusicFactory', 'MessageFactory', function($rootScope, $scope, MusicFactory, MessageFactory) {
 
     $scope.isLoading = true;
-    $scope.isUsrPlay = MusicService.getSetting('isUsrPlay');
+    $scope.isUsrPlay = MusicFactory.getSetting('isUsrPlay');
     $scope.toggleChannel = toggleChannel;
     $scope.$on('channel.toggle', toggleChannel);
 
     var ishide = false;
 
     function toggleChannel() {
-        $scope.channels = MusicService.getSetting('channelList');
+        $scope.channels = MusicFactory.getSetting('channelList');
         if (ishide) {
             $scope.showhide = 'eleDownIn';
         }
@@ -781,32 +808,32 @@ mainModule.controller('channelCtrl', ['$rootScope', '$scope', 'MusicService', 'M
     }
 
     $scope.togglePlayer = function() {
-        var isUsrPlay = MusicService.getSetting('isUsrPlay');
+        var isUsrPlay = MusicFactory.getSetting('isUsrPlay');
         $scope.isUsrPlay = !isUsrPlay;
         ishide = false;
         $scope.showhide = 'eleDownOut';
 
         if (!isUsrPlay) {
-            MessageService.loadingBroadcast(true, '切换到用户列表...');
-            MusicService.changePlayer(0); // 转到user模式
+            MessageFactory.loadingBroadcast(true, '切换到用户列表...');
+            MusicFactory.changePlayer(0); // 转到user模式
         }
         else {
-            MessageService.loadingBroadcast(true, '切换到随心听...');
-            MusicService.changePlayer(1);
+            MessageFactory.loadingBroadcast(true, '切换到随心听...');
+            MusicFactory.changePlayer(1);
         }
     };
 
     $scope.upload = function() {
-        MusicService.upload(true);
+        MusicFactory.upload(true);
     }
 }]);
 
-mainModule.controller('listCtrl', ['$rootScope', '$scope', '$state', 'MusicService', 'MessageService', function($rootScope, $scope, $state, MusicService, MessageService) {
+mainModule.controller('listCtrl', ['$rootScope', '$scope', '$state', 'MusicFactory', 'MessageFactory', function($rootScope, $scope, $state, MusicFactory, MessageFactory) {
 
 
     if (!localStorage.getItem('token')) {
         $state.go('login');
-        MessageService.toastBroadcast(true, '请重新登录~', 3000);
+        MessageFactory.toastBroadcast(true, '请重新登录~', 3000);
         return;
     }
 
@@ -826,37 +853,37 @@ mainModule.controller('listCtrl', ['$rootScope', '$scope', '$state', 'MusicServi
 
     $rootScope.$on('mode.update', function() {
         console.log('mode.update');
-        var isUsrPlay = MusicService.getSetting('isUsrPlay');
+        var isUsrPlay = MusicFactory.getSetting('isUsrPlay');
         $rootScope.name = isUsrPlay ? '播放列表' : '随心听';
         $scope.isUsrPlay = isUsrPlay;
         $scope.issearch = false;
         $scope.isadd = !isUsrPlay;
-        var nu = MusicService.getSetting('currentIndex');
+        var nu = MusicFactory.getSetting('currentIndex');
         console.log(nu);
-        if (nu > MusicService.getAudioList().length || nu <= -1) {
+        if (nu > MusicFactory.getAudioList().length || nu <= -1) {
             nu = 0;
         }
         audioListUpdate(nu);
     });
 
     $rootScope.$on('searchback.update', function() {
-        var isUsrPlay = MusicService.getSetting('isUsrPlay');
+        var isUsrPlay = MusicFactory.getSetting('isUsrPlay');
         $rootScope.name = isUsrPlay ? '播放列表' : '随心听';
         $scope.isUsrPlay = isUsrPlay;
         $scope.issearch = false;
         $scope.isadd = false;
-        $scope.songs = MusicService.getAudioList();
+        $scope.songs = MusicFactory.getAudioList();
     });
 
     $rootScope.$on('search.update', function() {
         $scope.isUsrPlay = false;
         $scope.issearch = true;
         $rootScope.name = "搜索 " + $scope.search.name + ' 的结果';
-        $scope.songs = MusicService.getAudioList();
+        $scope.songs = MusicFactory.getAudioList();
     });
 
     $scope.backUsr = function() {
-        MusicService.changePlayer(3);
+        MusicFactory.changePlayer(3);
     };
 
 
@@ -867,21 +894,21 @@ mainModule.controller('listCtrl', ['$rootScope', '$scope', '$state', 'MusicServi
 
 
     function audioListUpdate(nu) {
-        $scope.songs = MusicService.getAudioList();
+        $scope.songs = MusicFactory.getAudioList();
         console.log('播放列表: ', $scope.songs);
-        MessageService.loadingBroadcast();
-        MusicService.playSong(nu);
+        MessageFactory.loadingBroadcast();
+        MusicFactory.playSong(nu);
         if ($scope.songs.length) {
-            MessageService.toastBroadcast(true, $scope.songs[nu].songName, 2000);
+            MessageFactory.toastBroadcast(true, $scope.songs[nu].songName, 2000);
         }
     }
 
     $scope.searchSong = function() {
-        MusicService.changePlayer(2, $scope.search.name);
+        MusicFactory.changePlayer(2, $scope.search.name);
     };
 
 
-    $scope.isUsrPlay = MusicService.getSetting('isUsrPlay');
+    $scope.isUsrPlay = MusicFactory.getSetting('isUsrPlay');
 
 
     var ua = navigator.userAgent;
@@ -891,40 +918,40 @@ mainModule.controller('listCtrl', ['$rootScope', '$scope', '$state', 'MusicServi
     }
 
 
-    MusicService.getSongs()
+    MusicFactory.getSongs()
         .then(function(data) {
             if ($scope.isUsrPlay) {
-                MusicService.changePlayer(0);
+                MusicFactory.changePlayer(0);
             }
             else {
-                MusicService.changePlayer(1);
+                MusicFactory.changePlayer(1);
             }
         })
         .catch(function() {
-            MessageService.toastBroadcast(true, '请重新登录~~', 3000);
+            MessageFactory.toastBroadcast(true, '请重新登录~~', 3000);
             logout();
         })
 
 }]);
 
-mainModule.controller('musciCtrl', ['$rootScope', '$scope', 'MusicService', function($rootScope, $scope, MusicService) {
+mainModule.controller('musciCtrl', ['$rootScope', '$scope', 'MusicFactory', 'ImgFactory', function($rootScope, $scope, MusicFactory, ImgFactory) {
 
-    $scope.song = {songPicRadio: 'http://7xiblm.com1.z0.glb.clouddn.com/o_19irpgates13ec7n3a1gck1hho9.png'};                                       // 当前播放的歌曲
-    $scope.playMode = MusicService.getSetting('playMode');    // 单曲循环
-    $scope.isPlaying = MusicService.getSetting('isplaying');    // 正在播放
+    $scope.song = {songPicRadio: ImgFactory.headImg};                                       // 当前播放的歌曲
+    $scope.playMode = MusicFactory.getSetting('playMode');    // 单曲循环
+    $scope.isPlaying = MusicFactory.getSetting('isplaying');    // 正在播放
 
     $scope.changePlaying = function() {
-        MusicService.playorpauseSong($scope.isPlaying);
-        $scope.isPlaying = MusicService.getSetting('isplaying');
+        MusicFactory.playorpauseSong($scope.isPlaying);
+        $scope.isPlaying = MusicFactory.getSetting('isplaying');
     };
 
     $rootScope.$on('current.update', function() {
         $rootScope.time = null;         // 清空上次播放时间
-        var currentSong = MusicService.getCurrentSong();
-        $scope.isPlaying = MusicService.getSetting('isplaying');
+        var currentSong = MusicFactory.getCurrentSong();
+        $scope.isPlaying = MusicFactory.getSetting('isplaying');
         $scope.song = currentSong;
-        currentSong.songPicRadio = 'http://7xiblm.com1.z0.glb.clouddn.com/o_19irpgates13ec7n3a1gck1hho9.png';               // 先设置默认图片
-        var promise = MusicService.getSongInfo(currentSong.songId);
+        currentSong.songPicRadio = ImgFactory.headImg;               // 先设置默认图片
+        var promise = MusicFactory.getSongInfo(currentSong.songId);
         promise.then(function(data) {
             var arr = data.data.songList;
             // 调整图片
@@ -932,7 +959,7 @@ mainModule.controller('musciCtrl', ['$rootScope', '$scope', 'MusicService', func
                 var value = arr[0];
                 var imgUrl = value.songPicRadio;
                 if (!imgUrl) {
-                    value.songPicRadio = 'http://7xiblm.com1.z0.glb.clouddn.com/o_19irpgates13ec7n3a1gck1hho9.png';
+                    value.songPicRadio = ImgFactory.headImg;
                 }
                 else if (/http:\/\/qukufile2\.qianqian\.com/.test(imgUrl)) {
                     value.songPicRadio = imgUrl.match(/http:\/\/qukufile2\.qianqian\.com.*?jpg/)[0];
@@ -944,7 +971,7 @@ mainModule.controller('musciCtrl', ['$rootScope', '$scope', 'MusicService', func
             }
         }, function(err) {
             console.log('获取歌手头像错误', err);
-            $scope.song.songPicRadio = 'http://7xiblm.com1.z0.glb.clouddn.com/o_19irpgates13ec7n3a1gck1hho9.png';
+            $scope.song.songPicRadio = ImgFactory.headImg;
         });
     });
 
@@ -954,102 +981,56 @@ mainModule.controller('musciCtrl', ['$rootScope', '$scope', 'MusicService', func
         $rootScope.time = null;
         $rootScope.alltime = null;
 
-        $scope.song = {songPicRadio: 'http://7xiblm.com1.z0.glb.clouddn.com/o_19irpgates13ec7n3a1gck1hho9.png'};
-        $scope.playMode = MusicService.getSetting('playMode');    // 循环模式
+        $scope.song = {songPicRadio: ImgFactory.headImg};
+        $scope.playMode = MusicFactory.getSetting('playMode');    // 循环模式
         $scope.isPlaying = false;    // 正在播放
 
         $rootScope.$apply();
         $scope.$apply();
 
-        MusicService.clearProgress();
-        MusicService.setSetting('isplaying', false);
+        MusicFactory.clearProgress();
+        MusicFactory.setSetting('isplaying', false);
     });
 
     $scope.prev = function() {
-        MusicService.playPrevSong();
+        MusicFactory.playPrevSong();
     };
     $scope.next = function() {
-        MusicService.playNextSong();
+        MusicFactory.playNextSong();
     };
 
     $scope.changeLoop = function() {
-        MusicService.setSetting('playMode', (parseInt($scope.playMode) + 1) % 3);
-        console.log(MusicService.getSetting('playMode'));
-        $scope.playMode = MusicService.getSetting('playMode');
+        MusicFactory.setSetting('playMode', (parseInt($scope.playMode) + 1) % 3);
+        console.log(MusicFactory.getSetting('playMode'));
+        $scope.playMode = MusicFactory.getSetting('playMode');
     };
     $scope.changeLrc = function(nu) {
-        MusicService.changeLrcTime(nu);
+        MusicFactory.changeLrcTime(nu);
     };
 }]);
 
-mainModule.controller('messageCtrl', ['$rootScope', '$scope', 'MessageService', function($rootScope, $scope, MessageService) {
-    $scope.$on('message.update', function() {
-        $scope.isLoading = MessageService.getLoading();
-        $scope.loadingMsg = MessageService.getLoadingMsg();
-        $scope.isToast = MessageService.gettoast();
-        $scope.toastMsg = MessageService.gettoastMsg();
+mainModule.controller('messageCtrl', ['$scope', function($scope) {
+    $scope.$on('loading', function(event, isloading, msg) {
+        $scope.isLoading = isloading;
+        $scope.loadingMsg = msg;
+    });
+
+    $scope.$on('toast', function(event, istoast, msg) {
+        $scope.isToast = istoast;
+        $scope.toastMsg = msg;
     });
 }]);
 
-
-mainModule.controller('loginCtrl', ['$scope', '$http', '$state', 'MessageService', function($scope, $http, $state, MessageService) {
+mainModule.controller('loginCtrl', ['$scope', '$http', '$state', 'UserFactory', function($scope, $http, $state, UserFactory) {
     if (localStorage.getItem('token')) {
         $state.go('index');
     }
-
-    $scope.login = login;
-    $scope.regist = regist;
     $scope.username = 'shang';
 
-    function regist() {
-        MessageService.loadingBroadcast(true, '注册中');
-        $http({
-            url: LOGINURL + '/',
-            method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            data: 'username=' + $scope.username + '&password=' + $scope.password
-        })
-            .success(function(user) {
-                MessageService.loadingBroadcast(false);
-                if (user.errCode === -1) {
-                    MessageService.toastBroadcast(true, user.data || '注册失败~~', 3000);
-                }
-                else {
-                    localStorage.setItem('token', user.data.token);
-                    $state.go('index');
-                }
-            })
-            .error(function(e) {
-                MessageService.loadingBroadcast(false);
-                MessageService.toastBroadcast(true, '注册失败,请检查网络~~', 3000);
-                console.log(e);
-            });
-    }
-
-    function login() {
-        MessageService.loadingBroadcast(true, '登陆中');
-        $http({
-            url: LOGINURL + '/auth',
-            method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            data: 'username=' + $scope.username + '&password=' + $scope.password
-        })
-            .success(function(user) {
-                MessageService.loadingBroadcast(false);
-                if (user.errCode === -1) {
-                    MessageService.toastBroadcast(true, user.data || '登录失败~~', 3000);
-                }
-                else {
-                    localStorage.setItem('token', user.data.token);
-                    $state.go('index');
-                }
-            })
-            .error(function(e) {
-                MessageService.loadingBroadcast(false);
-                MessageService.toastBroadcast(true, '登录失败,请检查网络~~', 3000);
-                console.log(e);
-            });
-    }
-
+    $scope.login = function() {
+        UserFactory.login($scope.username, $scope.password);
+    };
+    $scope.regist = function() {
+        UserFactory.regist($scope.username, $scope.password);
+    };
 }]);
-
