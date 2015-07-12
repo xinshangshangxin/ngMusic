@@ -9,4 +9,4 @@ RUN npm install --production
 
 EXPOSE 1340
 
-CMD [ "node","dist/server.js"]
+CMD npm start
