@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="JavaScriptLibraryMappings">
-    <file url="file://$PROJECT_DIR$" libraries="{ngMusic node_modules}" />
-    <file url="PROJECT" libraries="{Node.js v0.12.2 Core Modules, angularjs-DefinitelyTyped, express-DefinitelyTyped, mongoose-DefinitelyTyped, q-DefinitelyTyped}" />
-    <includedPredefinedLibrary name="Node.js Globals" />
-  </component>
-</project>
