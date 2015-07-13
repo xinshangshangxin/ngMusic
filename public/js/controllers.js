@@ -47,7 +47,7 @@ mainModule.directive('removespan', ['MusicFactory', function(MusicFactory) {
                     MusicFactory.removeSong(index);
                 }
                 else {
-                    MusicFactory.addOneSong(index, true);
+                    MusicFactory.addOneSong(index, false);
                 }
             });
         }
@@ -63,7 +63,7 @@ mainModule.directive("playaudio", ['MusicFactory', function(MusicFactory) {
                 var index = ele.attr('data-index');
                 console.log('searchMode', MusicFactory.getSetting('searchMode'));
                 if (MusicFactory.getSetting('searchMode')) {
-                    MusicFactory.addOneSong(index);
+                    MusicFactory.addOneSong(index, false);
                     MusicFactory.changePlayer(0);
                 }
                 else {
@@ -498,6 +498,7 @@ mainModule.factory('MusicFactory', ['$http', '$q', '$rootScope', 'MessageFactory
         $rootScope.$broadcast('searchback.update');
         console.log(setting.audioList);
         _localSaveUsrInfo();
+        _upload();
     }
 
 
@@ -548,7 +549,6 @@ mainModule.factory('MusicFactory', ['$http', '$q', '$rootScope', 'MessageFactory
         },
         changePlayer: function(playMode, value) {
             // 0 userplay  1 channelplay 2 searchplay 3, back    other usrplay
-
             MessageFactory.loadingBroadcast(true, '加载中...');
             setting.searchMode = false;
             setting.isUsrPlay = (playMode === 0);
@@ -658,7 +658,9 @@ mainModule.factory('MusicFactory', ['$http', '$q', '$rootScope', 'MessageFactory
                 _userSongIds.push(tempSong.songId);
                 _userSongList.push(tempSong);
                 console.log('addOneSong', _userSongList);
-                setting.currentIndex = _userSongList.length - 1;
+                if (isSetIndes) {
+                    setting.currentIndex = _userSongList.length - 1;
+                }
                 MessageFactory.toastBroadcast(true, '添加成功~', 3000);
             }
             else {
@@ -790,7 +792,7 @@ mainModule.factory('UserFactory', ['$http', '$state', 'MessageFactory', function
 mainModule.controller('channelCtrl', ['$rootScope', '$scope', 'MusicFactory', 'MessageFactory', function($rootScope, $scope, MusicFactory, MessageFactory) {
 
     $scope.isLoading = true;
-    $scope.isUsrPlay = MusicFactory.getSetting('isUsrPlay');
+    $scope.isUsrPlay = MusicFactory.getSetting('isUsrPlay') || MusicFactory.getSetting('searchMode');
     $scope.toggleChannel = toggleChannel;
     $scope.$on('channel.toggle', toggleChannel);
 
@@ -849,6 +851,7 @@ mainModule.controller('listCtrl', ['$rootScope', '$scope', '$state', 'MusicFacto
         $scope.isUsrPlay = false;          // 随心听
         $scope.isadd = true;                // 显示 添加按钮
         audioListUpdate(0);
+        $scope.$apply();
     });
 
     $rootScope.$on('mode.update', function() {
@@ -908,7 +911,12 @@ mainModule.controller('listCtrl', ['$rootScope', '$scope', '$state', 'MusicFacto
     };
 
 
-    $scope.isUsrPlay = MusicFactory.getSetting('isUsrPlay');
+    $scope.isUsrPlay = MusicFactory.getSetting('isUsrPlay') || MusicFactory.getSetting('searchMode');
+
+    MusicFactory.setSetting('isUsrPlay', $scope.isUsrPlay);
+    MusicFactory.setSetting('searchMode', false);
+
+    console.log("MusicFactory.getSetting('isUsrPlay')", MusicFactory.getSetting('isUsrPlay'));
 
 
     var ua = navigator.userAgent;
