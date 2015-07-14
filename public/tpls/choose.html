@@ -7,7 +7,7 @@
         <button ng-click="toggleChannel()" class="btn btn-default" ng-if="!isUsrPlay" title="随心听频道">
             <i class="fa fa-bars"></i>
         </button>
-        <button ng-click="upload()" class="btn btn-default" title="上传">
+        <button ng-click="upload()" class="btn btn-default" ng-show="isUsrPlay" title="覆盖上传">
             <i class="fa fa-upload"></i>
         </button>
     </div>
